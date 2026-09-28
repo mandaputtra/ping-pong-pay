@@ -1,0 +1,25 @@
+{
+  "name": "ping-pong-pay",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@mera-passkey/web": "^1.0.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "viem": "^1.19.0",
+    "wagmi": "^1.4.12",
+    "@types/react": "^18.2.37",
+    "@types/react-dom": "^18.2.15"
+  },
+  "scripts": {
+    "start": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@vitejs/plugin-react": "^4.2.1",
+    "typescript": "^5.2.2",
+    "vite": "^5.0.0"
+  }
+}
