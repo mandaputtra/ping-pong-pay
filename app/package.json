@@ -1,1 +1,57 @@
-{"name":"ping-pong-pay","private":true,"type":"module","scripts":{"build":"vite build","dev":"vite","preview":"vite preview","relayer":"node --experimental-strip-types server/index.ts","test":"vitest run","typecheck":"tsc --noEmit"},"version":"0.1.0","dependencies":{"@category-labs/mera":"^0.2.0","@scure/bip32":"^2.4.0","@scure/bip39":"^2.4.0","react":"^19.3.0","react-dom":"^19.3.0","viem":"^2.56.9"},"devDependencies":{"@types/node":"^26.6.3","@types/react":"^19.3.0","@types/react-dom":"^19.3.0","@vitejs/plugin-react":"^6.1.1","typescript":"^7.0.2","vite":"^8.3.1","vitest":"^5.0.2"}}
+{
+  "name": "ping-pong-pay",
+  "private": true,
+  "type": "module",
+  "imports": {
+    "#/*": "./src/*"
+  },
+  "scripts": {
+    "dev": "vite dev --port 3000",
+    "generate-routes": "tsr generate",
+    "build": "vite build",
+    "preview": "vite preview",
+    "format": "biome format",
+    "lint": "biome lint",
+    "check": "biome check",
+    "start": "vite preview",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "relayer": "node --experimental-strip-types src/relayer-server.ts"
+  },
+  "dependencies": {
+    "@category-labs/mera": "^0.2.0",
+    "@scure/bip32": "^2.4.0",
+    "@scure/bip39": "^2.4.0",
+    "@tailwindcss/vite": "^4.1.18",
+    "@tanstack/react-devtools": "latest",
+    "@tanstack/react-query": "latest",
+    "@tanstack/react-query-devtools": "latest",
+    "@tanstack/react-router": "latest",
+    "@tanstack/react-router-devtools": "latest",
+    "@tanstack/react-router-ssr-query": "latest",
+    "@tanstack/react-start": "latest",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "tailwindcss": "^4.1.18",
+    "viem": "^2.57.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.4.5",
+    "@tailwindcss/typography": "^0.5.16",
+    "@tanstack/devtools-vite": "latest",
+    "@tanstack/router-cli": "^1.132.0",
+    "@types/node": "^22.10.2",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "@vitejs/plugin-react": "^6.0.1",
+    "typescript": "^6.0.2",
+    "vite": "^8.0.0",
+    "vitest": "^5.0.2"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "lightningcss"
+    ]
+  }
+}

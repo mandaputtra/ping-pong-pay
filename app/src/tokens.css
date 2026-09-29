@@ -1,38 +1,38 @@
 /* Design tokens. Motion durations follow Material 3 scale; every transition is
    transform/opacity only so nothing reflows. See docs/demo-ux.md. */
 :root {
-  color-scheme: light dark;
+	color-scheme: light dark;
 
-  --space-1: 0.25rem;
-  --space-2: 0.5rem;
-  --space-3: 0.75rem;
-  --space-4: 1rem;
-  --space-6: 1.5rem;
-  --space-8: 2rem;
+	--space-1: 0.25rem;
+	--space-2: 0.5rem;
+	--space-3: 0.75rem;
+	--space-4: 1rem;
+	--space-6: 1.5rem;
+	--space-8: 2rem;
 
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-full: 999px;
+	--radius-sm: 6px;
+	--radius-md: 10px;
+	--radius-full: 999px;
 
-  --surface: light-dark(#ffffff, #14161a);
-  --surface-raised: light-dark(#f6f7f9, #1c1f25);
-  --text: light-dark(#14161a, #f2f4f7);
-  --text-muted: light-dark(#5b6472, #9aa4b2);
-  --accent: light-dark(#1a4cff, #6f8bff);
-  --text-on-accent: #ffffff;
-  --danger: light-dark(#b3261e, #ffb4ab);
+	--surface: light-dark(#ffffff, #14161a);
+	--surface-raised: light-dark(#f6f7f9, #1c1f25);
+	--text: light-dark(#14161a, #f2f4f7);
+	--text-muted: light-dark(#5b6472, #9aa4b2);
+	--accent: light-dark(#1a4cff, #6f8bff);
+	--text-on-accent: #ffffff;
+	--danger: light-dark(#b3261e, #ffb4ab);
 
-  /* M3 duration tokens */
-  --motion-short: 150ms;
-  --motion-medium: 300ms;
-  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+	/* M3 duration tokens */
+	--motion-short: 150ms;
+	--motion-medium: 300ms;
+	--ease-standard: cubic-bezier(0.2, 0, 0, 1);
 
-  --target-min: 44px;
+	--target-min: 44px;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  :root {
-    --motion-short: 1ms;
-    --motion-medium: 1ms;
-  }
+	:root {
+		--motion-short: 1ms;
+		--motion-medium: 1ms;
+	}
 }

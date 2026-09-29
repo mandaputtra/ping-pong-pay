@@ -1,5 +1,5 @@
-import { parseUnits } from "viem";
 import type { Address } from "viem";
+import { parseUnits } from "viem";
 
 // Server decides the amount; the client never gets to choose.
 export const TOPUP_AMOUNT = parseUnits("100", 6);
@@ -17,17 +17,21 @@ const reserved: Record<string, string> = {};
 // Reserve synchronously, before any await, so two concurrent requests for the
 // same address cannot both pass the check. Caller must release() on failure.
 export function reserve(address: Address): bigint {
-  const prior = BigInt(reserved[address] ?? "0");
-  const next = prior + TOPUP_AMOUNT;
-  if (next > PER_ADDRESS_CAP) throw new Error("CAP_REACHED");
+	const prior = BigInt(reserved[address] ?? "0");
+	const next = prior + TOPUP_AMOUNT;
+	if (next > PER_ADDRESS_CAP) throw new Error("CAP_REACHED");
 
-  const outstanding = Object.values(reserved).reduce((sum, v) => sum + BigInt(v), 0n);
-  if (outstanding + TOPUP_AMOUNT > GLOBAL_CEILING) throw new Error("CEILING_REACHED");
+	const outstanding = Object.values(reserved).reduce(
+		(sum, v) => sum + BigInt(v),
+		0n,
+	);
+	if (outstanding + TOPUP_AMOUNT > GLOBAL_CEILING)
+		throw new Error("CEILING_REACHED");
 
-  reserved[address] = next.toString();
-  return prior;
+	reserved[address] = next.toString();
+	return prior;
 }
 
 export function release(address: Address, prior: bigint): void {
-  reserved[address] = prior.toString();
+	reserved[address] = prior.toString();
 }
