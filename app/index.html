@@ -3,28 +3,11 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
     <title>Ping Pong Pay</title>
-    <style>
-      body { font-family: system-ui, sans-serif; max-width: 28rem; margin: 4rem auto; padding: 0 1rem; text-align: center; }
-      .balance { font-size: 3rem; margin: 1rem 0; }
-      .address { color: #555; }
-      button { font-size: 1.1rem; padding: 0.6rem 1.4rem; cursor: pointer; }
-      .error { color: #b00; }
-    </style>
   </head>
   <body>
-    <h1>Ping Pong Pay</h1>
-    <div id="signed-out">
-      <p>Easy dollar payments. No passwords, no crypto fuss.</p>
-      <button id="signup">Get started</button>
-    </div>
-    <div id="signed-in" hidden>
-      <p class="address" id="address"></p>
-      <p class="balance" id="balance">$0.00</p>
-      <button id="signout">Sign out</button>
-      <button id="add-money">Add money</button>
-    </div>
-    <p class="error" id="error"></p>
-    <script type="module" src="/src/main.ts"></script>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
