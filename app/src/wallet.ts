@@ -15,6 +15,7 @@ import {
   type Address,
 } from "viem";
 import { monadTestnet } from "viem/chains";
+import type { LocalAccount } from "viem";
 
 // AUSD on Monad testnet (docs.agora.finance contract deployments)
 export const AUSD_TESTNET: Address = "0xa9012a055bd4e0eDfF8Ce09f960291C09D5322dC";
@@ -90,6 +91,11 @@ export async function getBalance(address: Address): Promise<string> {
     publicClient.readContract({ address: AUSD_TESTNET, abi: ERC20_BALANCE_ABI, functionName: "decimals" }),
   ]);
   return formatUnits(raw, decimals);
+}
+
+// Live signing account, or undefined when signed out.
+export function sessionAccount(): LocalAccount<"mera"> | undefined {
+  return session ? toViemAccount(session) : undefined;
 }
 
 export function disconnect(): void {
