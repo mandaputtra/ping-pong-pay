@@ -4,7 +4,7 @@ import { monadTestnet } from "viem/chains";
 import type { Address, Hex } from "viem";
 import { release, reserve, TOPUP_AMOUNT } from "./cap.ts";
 export { TOPUP_AMOUNT } from "./cap.ts";
-const AUSD_TESTNET: Address = "0xa9012a055bd4e0eDfF8Ce09f960291C09D5322dC";
+const USDC_TESTNET: Address = "0x534b2f3A21130d7a60830c2Df862319e593943A3";
 
 const ERC20_ABI = parseAbi(["function transfer(address to, uint256 amount) returns (bool)"]);
 
@@ -28,7 +28,7 @@ export async function topUp(address: Address): Promise<Hex> {
       transport: http(),
     });
     const hash = await client.writeContract({
-      address: AUSD_TESTNET,
+      address: USDC_TESTNET,
       abi: ERC20_ABI,
       functionName: "transfer",
       args: [address, TOPUP_AMOUNT],

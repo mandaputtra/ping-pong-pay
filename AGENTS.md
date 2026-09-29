@@ -2,11 +2,11 @@
 
 ## What this is
 
-Easy dollar payments on Monad (Metropolis hackathon). Mera passkey wallet, AUSD only, offchain EIP-712 invoices + direct transfers, no custom contracts. Glossary: `CONTEXT.md`. Decisions: `docs/adr/`. Research: `docs/`.
+Easy dollar payments on Monad (Metropolis hackathon). Mera passkey wallet, USDC only, offchain EIP-712 invoices + direct transfers, no custom contracts. Glossary: `CONTEXT.md`. Decisions: `docs/adr/`. Research: `docs/`.
 
 ## App layout
 
-- `app/` — Vite + TS + viem + `@category-labs/mera` web app. `src/wallet.ts` (passkey connect, AUSD balance), `src/main.ts` (UI wiring), `src/*.test.ts` (vitest).
+- `app/` — Vite + TS + viem + `@category-labs/mera` web app. `src/wallet.ts` (passkey connect, USDC balance), `src/main.ts` (UI wiring), `src/*.test.ts` (vitest).
 - Run from repo root with `--prefix app`: `npm run --prefix app dev|build|test|typecheck`.
 
 ## Frontend stack decision
@@ -15,7 +15,7 @@ Vanilla DOM + viem through ticket #4 (single-screen flows don't need a framework
 
 ## Monad gotchas (from docs/monad-metropolis.md)
 
-- Testnet chain 10143, mainnet 143. AUSD testnet `0xa9012a055bd4e0eDfF8Ce09f960291C09D5322dC`.
+- Testnet chain 10143, mainnet 143. USDC testnet `0x534b2f3A21130d7a60830c2Df862319e593943A3`.
 - Monad charges declared `gasLimit` — always pass explicit `gas`, never estimates.
 - Mera needs HTTPS or localhost + PRF-capable authenticator.
 

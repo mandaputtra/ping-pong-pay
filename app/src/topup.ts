@@ -1,5 +1,5 @@
 // Users hold 0 MON and Monad rejects zero-balance senders
-// ("Signer had insufficient balance"), so the relayer pays the gas and sends the AUSD.
+// ("Signer had insufficient balance"), so the relayer pays the gas and sends the USDC.
 const RELAYER_URL = import.meta.env.VITE_RELAYER_URL ?? "http://localhost:8787";
 
 export async function topUp(address: string): Promise<string> {

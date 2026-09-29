@@ -17,8 +17,8 @@ import {
 import { monadTestnet } from "viem/chains";
 import type { LocalAccount } from "viem";
 
-// AUSD on Monad testnet (docs.agora.finance contract deployments)
-export const AUSD_TESTNET: Address = "0xa9012a055bd4e0eDfF8Ce09f960291C09D5322dC";
+// USDC on Monad testnet (Monad token list)
+export const USDC_TESTNET: Address = "0x534b2f3A21130d7a60830c2Df862319e593943A3";
 
 const CREDENTIAL_KEY = "pingpong.credential";
 
@@ -87,8 +87,8 @@ const ERC20_BALANCE_ABI = [
 
 export async function getBalance(address: Address): Promise<string> {
   const [raw, decimals] = await Promise.all([
-    publicClient.readContract({ address: AUSD_TESTNET, abi: ERC20_BALANCE_ABI, functionName: "balanceOf", args: [address] }),
-    publicClient.readContract({ address: AUSD_TESTNET, abi: ERC20_BALANCE_ABI, functionName: "decimals" }),
+    publicClient.readContract({ address: USDC_TESTNET, abi: ERC20_BALANCE_ABI, functionName: "balanceOf", args: [address] }),
+    publicClient.readContract({ address: USDC_TESTNET, abi: ERC20_BALANCE_ABI, functionName: "decimals" }),
   ]);
   return formatUnits(raw, decimals);
 }
