@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useLogin, useLogout, usePrivy } from "@privy-io/react-auth";
+import { useEffect, useState } from "react";
 import type { Address } from "viem";
+import { privyWalletAddress } from "../lib/privy-user";
 import { friendlyError, topUp } from "../lib/topup";
-import { connect, disconnect, getBalance, sessionAccount } from "../lib/wallet";
+import { getBalance } from "../lib/wallet";
 
 function dollars(raw: string): string {
 	const [whole, frac = ""] = raw.split(".");
@@ -9,38 +11,47 @@ function dollars(raw: string): string {
 }
 
 export function PingPongPay() {
-	const [address, setAddress] = useState<Address | null>(null);
+	const { ready, authenticated, user } = usePrivy();
+	const { login } = useLogin();
+	const { logout } = useLogout();
 	const [balance, setBalance] = useState("0.00");
 	const [error, setError] = useState("");
 	const [busy, setBusy] = useState(false);
 
-	async function signIn() {
-		setError("");
-		try {
-			const next = await connect();
-			setBalance(await getBalance(next));
-			setAddress(next);
-		} catch (err) {
-			setError(friendlyError(err));
-		}
-	}
+	const address: Address | null =
+		authenticated && user ? privyWalletAddress(user) : null;
+
+	useEffect(() => {
+		if (!address) return;
+		getBalance(address).then(setBalance, (err: unknown) =>
+			setError(friendlyError(err)),
+		);
+	}, [address]);
 
 	async function addMoney() {
-		const account = sessionAccount();
-		if (!account) {
+		if (!address) {
 			setError("Please sign in first.");
 			return;
 		}
 		setError("");
 		setBusy(true);
 		try {
-			await topUp(account.address);
-			setBalance(await getBalance(account.address));
+			await topUp(address);
+			setBalance(await getBalance(address));
 		} catch (err) {
 			setError(friendlyError(err));
 		} finally {
 			setBusy(false);
 		}
+	}
+
+	if (!ready) {
+		return (
+			<main className="ppp">
+				<h1>Ping Pong Pay</h1>
+				<p className="muted">Loading…</p>
+			</main>
+		);
 	}
 
 	if (address === null) {
@@ -50,7 +61,7 @@ export function PingPongPay() {
 				<p className="muted">
 					Easy dollar payments. No passwords, no crypto fuss.
 				</p>
-				<button type="button" onClick={signIn}>
+				<button type="button" onClick={login}>
 					Get started
 				</button>
 				{error && (
@@ -74,9 +85,8 @@ export function PingPongPay() {
 				<button
 					type="button"
 					className="ghost"
-					onClick={() => {
-						disconnect();
-						setAddress(null);
+					onClick={async () => {
+						await logout();
 					}}
 				>
 					Sign out

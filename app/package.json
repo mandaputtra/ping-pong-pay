@@ -19,9 +19,7 @@
     "relayer": "node --experimental-strip-types src/relayer-server.ts"
   },
   "dependencies": {
-    "@category-labs/mera": "^0.2.0",
-    "@scure/bip32": "^2.4.0",
-    "@scure/bip39": "^2.4.0",
+    "@privy-io/react-auth": "^3.46.0",
     "@tailwindcss/vite": "^4.1.18",
     "@tanstack/react-devtools": "latest",
     "@tanstack/react-query": "latest",

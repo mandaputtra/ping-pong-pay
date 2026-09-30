@@ -1,7 +1,13 @@
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { PingPongPay } from "./PingPongPay";
+
+vi.mock("@privy-io/react-auth", () => ({
+	usePrivy: () => ({ ready: true, authenticated: false, user: null }),
+	useLogin: () => ({ login: () => {} }),
+	useLogout: () => ({ logout: async () => {} }),
+}));
 
 // Guards the shell: the signed-out copy and the primary action must exist before any
 // wallet does, and the marketing surface must stay free of jargon.
