@@ -19,7 +19,7 @@ viem · `@category-labs/mera` (to be replaced by Privy, #12). No Next.js.
 ## Commands (run from `app/`)
 
 ```bash
-pnpm dev            # dev server on :3000
+pnpm dev            # dev server on :3101
 pnpm build          # SSR build
 pnpm start          # serve the built app
 pnpm test           # vitest

@@ -23,7 +23,7 @@ Prerequisites: [pnpm](https://pnpm.io) 10+, Node 22+.
 cp .env.example .env        # then fill in VITE_PRIVY_APP_ID and RELAYER_PRIVATE_KEY
 cd app
 pnpm install
-pnpm dev                    # app on :3000
+pnpm dev                    # app on :3101
 pnpm relayer                # top-up service on :8791 (needs RELAYER_PRIVATE_KEY)
 ```
 
