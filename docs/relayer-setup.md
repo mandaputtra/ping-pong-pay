@@ -31,7 +31,7 @@ Ask Agora or Monad Foundation in Discord for a testnet mint or faucet refill. Un
 
 ## Limits
 
-- 100 AUSD per top-up, 200 AUSD per address, 100,000 AUSD global ceiling.
+- 2 USDC per top-up, 6 USDC per address, 100,000 USDC global ceiling.
 - The per-address ledger is in-memory and resets on restart. Before this is publicly
   reachable, move it to a real store and add per-IP limiting — addresses are free to
   generate, so the per-address cap alone is not an abuse limit.

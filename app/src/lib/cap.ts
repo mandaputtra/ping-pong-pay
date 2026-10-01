@@ -2,9 +2,9 @@ import type { Address } from "viem";
 import { parseUnits } from "viem";
 
 // Server decides the amount; the client never gets to choose.
-export const TOPUP_AMOUNT = parseUnits("100", 6);
+export const TOPUP_AMOUNT = parseUnits("2", 6);
 
-const PER_ADDRESS_CAP = parseUnits("200", 6);
+const PER_ADDRESS_CAP = parseUnits("6", 6);
 
 // Addresses are free to generate, so the per-address cap alone is not an abuse
 // limit. This is the ceiling on everything we have handed out so far.

@@ -25,12 +25,12 @@ describe("cap ledger", () => {
 	const a = "0x000000000000000000000000000000000000dEaD" as const;
 	const b = "0x000000000000000000000000000000000000bEef" as const;
 
-	it("allows two top-ups then refuses the third for the same address", () => {
+	it("allows three top-ups then refuses the fourth for the same address", () => {
 		const prior = reserve(a);
+		expect(() => reserve(a)).not.toThrow();
 		expect(() => reserve(a)).not.toThrow();
 		expect(() => reserve(a)).toThrow("CAP_REACHED");
 		release(a, prior); // reset for the other assertions
-		release(a, BigInt("100000000") * 1n);
 	});
 
 	it("gives each address its own allowance", () => {

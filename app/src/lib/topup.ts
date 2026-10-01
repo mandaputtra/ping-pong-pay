@@ -20,7 +20,7 @@ export async function topUp(address: string): Promise<string> {
 export function friendlyError(err: unknown): string {
 	const message = err instanceof Error ? err.message : String(err);
 	if (/cap reached/i.test(message))
-		return "You've already added money twice. That's plenty for now.";
+		return "You've already added money three times. That's plenty for now.";
 	if (/out of stock/i.test(message))
 		return "We're out of demo money right now. Try again in a bit.";
 	if (/fetch failed|network|ECONN|CORS/i.test(message))
