@@ -2,7 +2,13 @@
 // route: TanStack Start 1.168.59 has no server-route API (the documented
 // `server: { handlers }` option lands in an unreleased version), so the boundary
 // stays an explicit HTTP hop with CORS.
-const RELAYER_URL = import.meta.env.VITE_RELAYER_URL ?? "http://localhost:8791";
+// An explicitly empty VITE_RELAYER_URL (key present, no value) must fall back the
+// same way an unset one does: ?? alone keeps "" because empty string is not nullish.
+export function relayerBaseUrl(env?: string): string {
+	return env && env.length > 0 ? env : "http://localhost:8791";
+}
+
+const RELAYER_URL = relayerBaseUrl(import.meta.env.VITE_RELAYER_URL);
 
 export async function topUp(address: string): Promise<string> {
 	const res = await fetch(`${RELAYER_URL}/topup`, {

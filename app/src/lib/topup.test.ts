@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { friendlyError } from "./topup";
+import { friendlyError, relayerBaseUrl } from "./topup";
 
 // Acceptance criterion 3: no raw provider/chain error ever reaches the user.
 describe("friendlyError", () => {
@@ -20,5 +20,15 @@ describe("friendlyError", () => {
 		expect(
 			friendlyError(new Error("execution reverted: InsufficientFunds")),
 		).not.toMatch(/revert|InsufficientFunds/i);
+	});
+});
+
+describe("relayerBaseUrl", () => {
+	it("falls back on unset AND explicitly empty values", () => {
+		expect(relayerBaseUrl(undefined)).toBe("http://localhost:8791");
+		expect(relayerBaseUrl("")).toBe("http://localhost:8791");
+		expect(relayerBaseUrl("https://relayer.example")).toBe(
+			"https://relayer.example",
+		);
 	});
 });
