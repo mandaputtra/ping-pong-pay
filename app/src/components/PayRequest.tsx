@@ -12,6 +12,7 @@ import {
 import { loadReceipt, saveReceipt } from "../lib/receipt";
 import type { DecodedRequest } from "../lib/request";
 import { decodeLink, verifyRequest } from "../lib/request";
+import { StatusSwap } from "./StatusSwap";
 
 // Verifying before deciding, then one explicit Pay. The state machine is the
 // product: checking -> ready -> submitting -> confirming -> paid, and the failure
@@ -160,6 +161,7 @@ export function PayRequest({
 			<main className="ppp">
 				<p className="muted">Paid</p>
 				<h1>{usdFromBaseUnits(receipt.amount)}</h1>
+				<StatusSwap kind="swap" />
 				<p className="muted">{`To ${receipt.recipient}`}</p>
 				<p className="muted">
 					{new Date(receipt.paidAt * 1000).toLocaleString("en-US", {
@@ -189,7 +191,8 @@ export function PayRequest({
 		return (
 			<main className="ppp">
 				<h1>{stage.kind === "submitting" ? "Sending…" : "Confirming…"}</h1>
-				<p className="muted">Hang on, this takes a second.</p>
+				<p className="muted">Waiting for confirmation…</p>
+				<StatusSwap kind="pending" />
 			</main>
 		);
 	}

@@ -138,3 +138,80 @@ button.ghost {
 	background: var(--surface-raised);
 	border-radius: var(--radius-sm);
 }
+
+/* Motion: opacity/transform only, never layout. See docs/demo-ux.md §1.
+   The hidden state is attribute-scoped so it can never win a specificity tie
+   against the shown state below - equal specificity would leave this to source
+   order, which is exactly the bug this shape avoids. */
+.status-swap {
+	display: flex;
+	justify-content: center;
+	margin: var(--space-2) 0;
+	transition:
+		opacity var(--motion-swap) var(--ease-decelerate),
+		transform var(--motion-swap) var(--ease-decelerate);
+}
+
+.status-swap[data-shown="false"] {
+	opacity: 0;
+	transform: scale(0.9);
+}
+
+.status-swap[data-shown="true"] {
+	opacity: 1;
+	transform: scale(1);
+}
+
+.checkmark {
+	width: 40px;
+	height: 40px;
+	fill: none;
+	stroke: var(--accent);
+	stroke-width: 2.5;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+	stroke-dasharray: 24;
+	stroke-dashoffset: 24;
+}
+
+.status-swap[data-shown="true"] .checkmark {
+	animation: checkmark-draw var(--motion-swap) linear forwards;
+}
+
+@keyframes checkmark-draw {
+	to {
+		stroke-dashoffset: 0;
+	}
+}
+
+.status-pending {
+	display: flex;
+	justify-content: center;
+	margin: var(--space-2) 0;
+}
+
+.spinner {
+	width: 22px;
+	height: 22px;
+	border: 2px solid var(--line);
+	border-top-color: var(--accent);
+	border-radius: var(--radius-full);
+	animation: spin 1000ms linear infinite;
+}
+
+@keyframes spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.status-swap[data-shown="true"] .checkmark {
+		animation: none;
+		stroke-dashoffset: 0;
+	}
+
+	.spinner {
+		animation-duration: 1000ms;
+	}
+}

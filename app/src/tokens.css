@@ -25,7 +25,10 @@
 	/* M3 duration tokens */
 	--motion-short: 150ms;
 	--motion-medium: 300ms;
+	/* M3 short2 + standard-decelerate: the status swap arrives and settles. */
+	--motion-swap: 200ms;
 	--ease-standard: cubic-bezier(0.2, 0, 0, 1);
+	--ease-decelerate: cubic-bezier(0, 0, 0, 1);
 
 	--target-min: 44px;
 }
@@ -34,5 +37,6 @@
 	:root {
 		--motion-short: 1ms;
 		--motion-medium: 1ms;
+		--motion-swap: 1ms;
 	}
 }
