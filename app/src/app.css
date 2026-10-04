@@ -89,3 +89,52 @@ button.ghost {
 	padding: var(--space-8) var(--space-4);
 	text-align: center;
 }
+
+.ppp-card {
+	margin-top: var(--space-8);
+	padding: var(--space-4);
+	border: 1px solid var(--line);
+	border-radius: var(--radius-md);
+	text-align: left;
+}
+
+.ppp-card h2 {
+	font-size: 1rem;
+	margin: 0 0 var(--space-3);
+}
+
+.ppp-field {
+	display: block;
+	margin-bottom: var(--space-3);
+	font-size: 0.875rem;
+}
+
+.ppp-field span {
+	display: block;
+	margin-bottom: var(--space-1);
+	color: var(--text-muted);
+}
+
+.ppp-field input {
+	width: 100%;
+	padding: var(--space-2) var(--space-3);
+	font: inherit;
+	color: inherit;
+	background: var(--surface);
+	border: 1px solid var(--line);
+	border-radius: var(--radius-sm);
+}
+
+.ppp-result {
+	margin-top: var(--space-4);
+}
+
+.ppp-link {
+	display: block;
+	margin: var(--space-2) 0;
+	padding: var(--space-2);
+	font-size: 0.75rem;
+	word-break: break-all;
+	background: var(--surface-raised);
+	border-radius: var(--radius-sm);
+}

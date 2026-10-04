@@ -4,6 +4,7 @@ import type { Address } from "viem";
 import { privyWalletAddress } from "../lib/privy-user";
 import { friendlyError, topUp } from "../lib/topup";
 import { getBalance } from "../lib/wallet";
+import { CreateRequest } from "./CreateRequest";
 
 function dollars(raw: string): string {
 	const [whole, frac = ""] = raw.split(".");
@@ -92,6 +93,7 @@ export function PingPongPay() {
 					Sign out
 				</button>
 			</div>
+			<CreateRequest recipient={address} />
 			{error && (
 				<p role="alert" className="error">
 					{error}
