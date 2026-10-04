@@ -4,7 +4,6 @@ import viteReact from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 
 export default defineConfig({
-  // .env lives at the repo root, one level above this package.
-  envDir: "..",
+  envDir: ".",
   plugins: [tailwindcss(), tanstackStart(), viteReact()],
 });

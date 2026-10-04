@@ -16,7 +16,7 @@
     "start": "vite preview",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
-    "relayer": "node --experimental-strip-types src/relayer-server.ts"
+    "relayer": "node --experimental-strip-types --env-file=.env src/relayer-server.ts"
   },
   "dependencies": {
     "@privy-io/react-auth": "^3.46.0",

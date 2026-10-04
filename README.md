@@ -20,14 +20,14 @@ No escrow contract holds money — payments move directly wallet to wallet. See
 Prerequisites: [pnpm](https://pnpm.io) 10+, Node 22+.
 
 ```bash
-cp .env.example .env        # then fill in VITE_PRIVY_APP_ID and RELAYER_PRIVATE_KEY
+cp .env.example app/.env    # then fill in VITE_PRIVY_APP_ID and RELAYER_PRIVATE_KEY
 cd app
 pnpm install
 pnpm dev                    # app on :3101
 pnpm relayer                # top-up service on :8791 (needs RELAYER_PRIVATE_KEY)
 ```
 
-Environment (`app/` reads from the repo root, see `envDir` in `vite.config.ts`):
+Environment (`app/.env`; both Vite and the relayer read it from there):
 
 | `VITE_PRIVY_APP_ID` | client | Privy project ID from [dashboard.privy.io](https://dashboard.privy.io) |
 | `RELAYER_PRIVATE_KEY` | **server only** | Hot wallet funding demo top-ups. Never reaches the browser. |

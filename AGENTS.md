@@ -51,8 +51,9 @@ than this file. Example:
 
 ## Environment
 
-`.env` lives at the **repo root**, one level above this package. Vite is configured with
-`envDir: ".."` to find it. `.env` is gitignored; only `.env.example` is committed.
+`.env` lives in `app/`, next to the code that reads it. Vite uses the default `envDir`
+(`.`); the relayer loads it via `node --env-file=.env`. `.env` is gitignored at any depth;
+only the root `.env.example` is committed.
 
 | Variable | Where | Purpose |
 |---|---|---|
