@@ -4,6 +4,14 @@ import { createWalletClient, custom } from "viem";
 import { monadTestnet } from "viem/chains";
 import { usdFromBaseUnits } from "../lib/amount";
 import {
+	isExpired,
+	markNonceUsed,
+	type RefusalKind,
+	refusalBody,
+	refusalTitle,
+	usedNonces,
+} from "../lib/guards";
+import {
 	explorerTx,
 	hasAlreadyPaid,
 	payRequest,
@@ -14,13 +22,12 @@ import type { DecodedRequest } from "../lib/request";
 import { decodeLink, verifyRequest } from "../lib/request";
 import { StatusSwap } from "./StatusSwap";
 
-// Verifying before deciding, then one explicit Pay. The state machine is the
-// product: checking -> ready -> submitting -> confirming -> paid, and the failure
-// classes each collapse to one sentence the payer can act on.
+// Verifying before deciding, then one explicit Pay. Every refusal happens before
+// the payer is asked to confirm, and each class carries the sentence + next action
+// from guards.ts rather than ad-hoc copy.
 type Stage =
 	| { kind: "checking" }
-	| { kind: "invalid"; reason: string }
-	| { kind: "expired" }
+	| { kind: "refused"; reason: RefusalKind }
 	| { kind: "ready"; request: DecodedRequest; alreadyPaid: boolean }
 	| { kind: "submitting" }
 	| { kind: "confirming"; hash: `0x${string}` }
@@ -44,26 +51,19 @@ export function PayRequest({
 		let cancelled = false;
 		const decoded = decodeLink(slug);
 		if (!decoded) {
-			setStage({
-				kind: "invalid",
-				reason: "This link isn't a payment request.",
-			});
+			setStage({ kind: "refused", reason: "unreadable" });
 			return;
 		}
 		(async () => {
-			// The signature gate comes first: nothing about a request that fails
-			// it is worth showing, and nothing can be signed against it.
+			// Gate order matters: the signature decides whether the terms are real,
+			// then expiry decides whether they are still payable, then the ledger and
+			// the chain decide whether this payer already did it.
 			if (!(await verifyRequest(decoded, decoded.signature))) {
-				if (cancelled) return;
-				setStage({
-					kind: "invalid",
-					reason: "This request doesn't match the freelancer's signature.",
-				});
+				if (!cancelled) setStage({ kind: "refused", reason: "bad-signature" });
 				return;
 			}
-			if (Number(decoded.expiry) * 1000 < Date.now()) {
-				if (cancelled) return;
-				setStage({ kind: "expired" });
+			if (isExpired(decoded, Math.floor(Date.now() / 1000))) {
+				if (!cancelled) setStage({ kind: "refused", reason: "expired" });
 				return;
 			}
 			if (!cancelled) {
@@ -75,16 +75,23 @@ export function PayRequest({
 		};
 	}, [slug]);
 
-	// A payer who returns to the same link sees their receipt instead of a second
-	// charge. The receipt in storage is a shortcut; the chain is the guard.
+	// A payer who returns to the same link must not be charged twice. Three
+	// guards in order of cost: the local receipt and the persisted nonce ledger
+	// are free, and the on-chain Transfer scan is the authority that survives a
+	// cleared browser. The last one must never block paying - a failed scan
+	// leaves the request payable rather than stranding the payer.
 	useEffect(() => {
 		if (stage.kind !== "ready") return;
-		const wallet = wallets?.[0];
 		const seen = loadReceipt(stage.request.nonce);
 		if (seen) {
 			setStage({ kind: "paid", receipt: seen });
 			return;
 		}
+		if (usedNonces().has(stage.request.nonce)) {
+			setStage({ kind: "ready", request: stage.request, alreadyPaid: true });
+			return;
+		}
+		const wallet = wallets?.[0];
 		if (!wallet) return;
 		let cancelled = false;
 		hasAlreadyPaid(wallet.address as `0x${string}`, stage.request).then(
@@ -124,6 +131,9 @@ export function PayRequest({
 				request,
 			);
 			setStage({ kind: "confirming", hash: receipt.hash });
+			// Burn the nonce locally too: a reload then cannot offer a second pay
+			// even before the chain scan catches up.
+			markNonceUsed(request.nonce);
 			saveReceipt(request.nonce, receipt);
 			setStage({ kind: "paid", receipt });
 		} catch {
@@ -142,15 +152,11 @@ export function PayRequest({
 		);
 	}
 
-	if (stage.kind === "invalid" || stage.kind === "expired") {
+	if (stage.kind === "refused") {
 		return (
 			<main className="ppp">
-				<h1>
-					{stage.kind === "expired" ? "This link has expired" : "Invalid link"}
-				</h1>
-				<p className="muted">
-					{stage.kind === "expired" ? "Ask for a fresh link." : stage.reason}
-				</p>
+				<h1>{refusalTitle(stage.reason)}</h1>
+				<p className="muted">{refusalBody(stage.reason)}</p>
 			</main>
 		);
 	}

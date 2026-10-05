@@ -18,6 +18,7 @@ const ERC20_ABI = parseAbi([
 // Monad charges the declared gasLimit, not gas used, so never let an estimate
 // stand. Same reason the relayer passes an explicit value.
 const TRANSFER_GAS = 100_000n;
+
 // ponytail: replay detection scans a bounded window of recent blocks rather than
 // the request's full 7-day life. The public Monad RPC rejects any eth_getLogs
 // range wider than a few hundred blocks (verified: 100 works, 500 errors), so
@@ -37,8 +38,13 @@ export type Receipt = {
 	paidAt: number; // unix seconds
 };
 
-// A payer who opens the same link twice must not be charged twice. The chain is
-// the authority here: localStorage is only a shortcut for rendering the receipt.
+// A payer who opens the same link twice must not be charged twice. This is the
+// authority: the browser ledger in guards.ts is only a shortcut for rendering.
+//
+// The chain cannot see the offchain nonce, so the match is on the triple the
+// signer committed to and the payer controls: this payer, this recipient, this
+// exact amount. A different amount is a different payment, not a replay of this
+// one.
 export async function hasAlreadyPaid(
 	payer: Address,
 	request: DecodedRequest,
@@ -57,6 +63,7 @@ export async function hasAlreadyPaid(
 	// An indexer or per-nonce registry is the upgrade if this scan grows.
 	return logs.some((log) => log.args.value === BigInt(request.amount));
 }
+
 export async function payRequest(
 	client: WalletClient,
 	account: Address,
