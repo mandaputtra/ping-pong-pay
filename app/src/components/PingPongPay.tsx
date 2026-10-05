@@ -4,6 +4,7 @@ import type { Address } from "viem";
 import { privyWalletAddress } from "../lib/privy-user";
 import { friendlyError, topUp } from "../lib/topup";
 import { getBalance } from "../lib/wallet";
+import { ActivityList } from "./ActivityList";
 import { CreateRequest } from "./CreateRequest";
 
 function dollars(raw: string): string {
@@ -94,6 +95,7 @@ export function PingPongPay() {
 				</button>
 			</div>
 			<CreateRequest recipient={address} />
+			<ActivityList address={address} />
 			{error && (
 				<p role="alert" className="error">
 					{error}

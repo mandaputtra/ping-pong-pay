@@ -139,6 +139,28 @@ button.ghost {
 	border-radius: var(--radius-sm);
 }
 
+.activity {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	text-align: left;
+}
+
+.activity li {
+	padding: var(--space-3) 0;
+	border-top: 1px solid var(--line);
+}
+
+.activity li p {
+	margin: 0 0 var(--space-1);
+}
+
+.balance-sm {
+	font-size: 1.5rem;
+	font-weight: 600;
+	font-variant-numeric: tabular-nums;
+}
+
 /* Motion: opacity/transform only, never layout. See docs/demo-ux.md §1.
    The hidden state is attribute-scoped so it can never win a specificity tie
    against the shown state below - equal specificity would leave this to source

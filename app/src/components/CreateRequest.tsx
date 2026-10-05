@@ -2,6 +2,7 @@ import { useWallets } from "@privy-io/react-auth";
 import { useState } from "react";
 import { createWalletClient, custom } from "viem";
 import { monadTestnet } from "viem/chains";
+import { saveNote } from "../lib/activity";
 import { parseAmount } from "../lib/amount";
 import { buildRequest, encodeLink, signRequest } from "../lib/request";
 import { USDC_TESTNET } from "../lib/wallet";
@@ -45,12 +46,14 @@ export function CreateRequest({ recipient }: { recipient: `0x${string}` }) {
 				transport: custom(await wallet.getEthereumProvider()),
 			});
 			// Privy types its address as string; the trust boundary already checked
-			// it is a well-formed 0x address in privyWalletAddress().
 			const signature = await signRequest(
 				client,
 				wallet.address as `0x${string}`,
 				request,
 			);
+			// The description is unsigned prose that never reaches the chain. Saving
+			// it here is what lets the recipient's browser label the payment later.
+			saveNote(request.amount, recipient, request.description);
 			setLink(encodeLink(request, signature, window.location.origin));
 		} catch {
 			setError("Couldn't create the link. Try again.");
