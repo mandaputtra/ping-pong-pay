@@ -20,21 +20,38 @@ source document: [`docs/getpaidnow-architecture.md`](docs/getpaidnow-architectur
 
 ## Run it
 
-Prerequisites: [pnpm](https://pnpm.io) 10+, Node 22+.
+Prerequisites: [pnpm](https://pnpm.io) 10+ and Node 22+.
 
 ```bash
-cp .env.example app/.env    # then fill in VITE_PRIVY_APP_ID and RELAYER_PRIVATE_KEY
-cd app
+git clone https://github.com/mandaputtra/ping-pong-pay
+cd ping-pong-pay/app
 pnpm install
-pnpm dev                    # app on :3101
-pnpm relayer                # top-up service on :8791 (needs RELAYER_PRIVATE_KEY)
+cp ../.env.example .env      # then fill in VITE_PRIVY_APP_ID
+pnpm dev                     # app on http://localhost:3101
 ```
 
-Environment (`app/.env`; both Vite and the relayer read it from there):
+That is enough to sign in, see your balance, and create a payment link. To watch a
+payment actually land you also need the top-up service in a second terminal:
 
-| `VITE_PRIVY_APP_ID` | client | Privy project ID from [dashboard.privy.io](https://dashboard.privy.io) |
-| `RELAYER_PRIVATE_KEY` | **server only** | Hot wallet funding demo top-ups. Never reaches the browser. |
-| `VITE_RELAYER_URL` | client | Relayer base URL, defaults to `http://localhost:8791` |
+```bash
+pnpm relayer                 # top-up service on :8791
+```
+
+You need three things to demo the full loop:
+
+1. **`VITE_PRIVY_APP_ID`** from [dashboard.privy.io](https://dashboard.privy.io). Enable the
+    login methods you want (email, Google, Apple, GitHub) and add
+    `http://localhost:3101` as an allowed origin, or sign-in will fail.
+2. **Testnet USDC in two wallets** — yours and your payer's. Circle's faucet
+    (<https://faucet.circle.com>, Monad Testnet) releases 20 USDC per address every 2 hours.
+3. **Testnet MON in the relayer wallet** for gas. The Monad faucet is at
+    <https://faucet.monad.xyz>.
+
+| Variable | Where it runs | Purpose |
+|---|---|---|
+| `VITE_PRIVY_APP_ID` | browser | Privy project ID. Public by design. |
+| `RELAYER_PRIVATE_KEY` | **relayer only** | Hot wallet funding demo top-ups. Never reaches the browser. |
+| `VITE_RELAYER_URL` | browser | Relayer base URL. Leave empty locally; defaults to `http://localhost:8791`. |
 
 Checks: `pnpm test` (unit tests) · `pnpm typecheck` · `pnpm check` (biome) · `pnpm build`
 (SSR bundle, then `pnpm start` to serve it).
@@ -54,13 +71,18 @@ Checks: `pnpm test` (unit tests) · `pnpm typecheck` · `pnpm check` (biome) · 
 Key docs: [`AGENTS.md`](AGENTS.md) (stack, commands, gotchas) · [`CONTEXT.md`](CONTEXT.md)
 (glossary) · [`docs/`](docs/) (research, pitch deck, hackathon terms).
 
-## Hackathon disclosure
+## AI tools and hackathon disclosure
 
-Per the Metropolis Terms & Conditions §4.1.4: **this project was built with AI coding tools**
-— an AI assistant wrote code, ran tests, and authored docs under the author's direction, with
-every change reviewed before commit.
+Per the Metropolis Terms & Conditions §4.1.4: **this project was built with AI coding tools.**
+An AI assistant (Claude, GPT-5-class models) did the research, implementation, test-writing,
+code review, and documentation under the author's direction, and every change was reviewed
+before commit.
 
-- MIT License ([LICENSE](LICENSE)).
-- Submission deadline 13 Oct 2026, 11:59 PM ET; demo video capped at 3 minutes.
+The agents were held to verifying their own work by running the product rather than reading
+it. Several real defects were caught that way: a 502 from a relayer that never loaded `.env`,
+a confirmation animation stuck at zero opacity, and a replay-protection window wider than the
+RPC permits. All code is published for review under [MIT](LICENSE).
+
+- Submission deadline **13 Oct 2026, 11:59 PM ET**; demo video capped at **3 minutes**.
 - Full eligibility, registration, and evidence checklist: GitHub issue
   [#10](https://github.com/mandaputtra/ping-pong-pay/issues/10).

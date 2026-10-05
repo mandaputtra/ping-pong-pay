@@ -10,22 +10,27 @@ export type RefusalKind =
 	| "expired"
 	| "already-paid";
 
+// Copy is taken from the deck table in docs/ux-patterns.md §5, including its
+// "never say" column: no "invoice", "nonce", "EIP-712", "signature verification",
+// or any wallet error string reaches the payer. The deck's own example names
+// the client "Maya"; the requester here is not named, so the copy says
+// "your client" rather than inventing a name we do not have.
 const COPY: Record<RefusalKind, { title: string; body: string }> = {
 	unreadable: {
-		title: "This link isn't a payment request",
+		title: "This isn't a payment request",
 		body: "It may have been cut off when it was copied. Ask for a fresh link.",
 	},
 	"bad-signature": {
 		title: "Don't pay this one",
-		body: "This request doesn't match what your client signed, so something in the link was changed. Ask them to send it again.",
+		body: "This link doesn't match what your client signed. Ask them to send a new one.",
 	},
 	expired: {
-		title: "This link has expired",
-		body: "Ask your client for a new link and pay through that one instead.",
+		title: "This request expired",
+		body: "Ask your client for a new link.",
 	},
 	"already-paid": {
-		title: "You've already paid this",
-		body: "This request has been paid, so there's nothing left to send.",
+		title: "You already paid this",
+		body: "Here's your receipt.",
 	},
 };
 

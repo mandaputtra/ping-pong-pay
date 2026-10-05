@@ -33,7 +33,7 @@ type Stage =
 	| { kind: "confirming"; hash: `0x${string}` }
 	| { kind: "paid"; receipt: Receipt }
 	| { kind: "needsWallet" }
-	| { kind: "failed"; reason: string };
+	| { kind: "failed"; reason: string; request: DecodedRequest };
 
 export function PayRequest({
 	slug,
@@ -139,7 +139,8 @@ export function PayRequest({
 		} catch {
 			setStage({
 				kind: "failed",
-				reason: "We couldn't send that payment. Your money hasn't moved.",
+				reason: "That didn't go through. Your money hasn't moved — try again.",
+				request,
 			});
 		}
 	}
@@ -168,7 +169,7 @@ export function PayRequest({
 				<p className="muted">Paid</p>
 				<h1>{usdFromBaseUnits(receipt.amount)}</h1>
 				<StatusSwap kind="swap" />
-				<p className="muted">{`To ${receipt.recipient}`}</p>
+				<p className="muted">{`Sent to ${receipt.recipient}`}</p>
 				<p className="muted">
 					{new Date(receipt.paidAt * 1000).toLocaleString("en-US", {
 						dateStyle: "medium",
@@ -176,7 +177,7 @@ export function PayRequest({
 					})}
 				</p>
 				<a href={explorerTx(receipt.hash)} target="_blank" rel="noreferrer">
-					View on the blockchain
+					View on MonadScan
 				</a>
 			</main>
 		);
@@ -185,19 +186,24 @@ export function PayRequest({
 	if (stage.kind === "needsWallet") {
 		return (
 			<main className="ppp">
-				<h1>One quick step</h1>
-				<p className="muted">Create a wallet to send this payment.</p>
+				<h1>Create your wallet to pay</h1>
+				<p className="muted">One tap. No seed phrase, no app install.</p>
 				<button type="button" onClick={login}>
 					Get started
 				</button>
 			</main>
 		);
 	}
+
 	if (stage.kind === "submitting" || stage.kind === "confirming") {
 		return (
 			<main className="ppp">
-				<h1>{stage.kind === "submitting" ? "Sending…" : "Confirming…"}</h1>
-				<p className="muted">Waiting for confirmation…</p>
+				<h1>
+					{stage.kind === "submitting"
+						? "Waiting for your approval…"
+						: "Finishing your payment…"}
+				</h1>
+				<p className="muted">This takes a second.</p>
 				<StatusSwap kind="pending" />
 			</main>
 		);
@@ -208,6 +214,9 @@ export function PayRequest({
 			<main className="ppp">
 				<h1>That didn't go through</h1>
 				<p className="muted">{stage.reason}</p>
+				<button type="button" onClick={() => pay(stage.request)}>
+					Try again
+				</button>
 			</main>
 		);
 	}
@@ -217,10 +226,10 @@ export function PayRequest({
 		<main className="ppp">
 			<h1>Payment request</h1>
 			<p className="balance">{usdFromBaseUnits(request.amount)}</p>
-			{description && <p className="muted">{`For: ${description}`}</p>}
+			{description && <p className="muted">{description}</p>}
 			<p className="muted">{`To ${request.recipient}`}</p>
 			{alreadyPaid ? (
-				<p className="muted">You've already paid this request.</p>
+				<p className="muted">You already paid this.</p>
 			) : authenticated && user ? (
 				<button type="button" onClick={() => pay(request)}>
 					Pay {usdFromBaseUnits(request.amount)}

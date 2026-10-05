@@ -74,7 +74,7 @@ export function ActivityList({ address }: { address: `0x${string}` }) {
 								})}
 							</p>
 							<a href={explorerTx(entry.hash)} target="_blank" rel="noreferrer">
-								View on the blockchain
+								View on MonadScan
 							</a>
 						</li>
 					))}
