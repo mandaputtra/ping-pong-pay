@@ -38,9 +38,11 @@ type Stage =
 export function PayRequest({
 	slug,
 	description,
+	requesterName,
 }: {
 	slug: string;
 	description: string;
+	requesterName: string;
 }) {
 	const { ready, authenticated, user } = usePrivy();
 	const { login } = useLogin();
@@ -224,7 +226,9 @@ export function PayRequest({
 	const { request, alreadyPaid } = stage;
 	return (
 		<main className="ppp">
-			<h1>Payment request</h1>
+			<h1>
+				{requesterName ? `${requesterName} is asking for` : "Payment request"}
+			</h1>
 			<p className="balance">{usdFromBaseUnits(request.amount)}</p>
 			{description && <p className="muted">{description}</p>}
 			<p className="muted">{`To ${request.recipient}`}</p>

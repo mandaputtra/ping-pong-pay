@@ -6,6 +6,7 @@ import { parseAmount, usdFromBaseUnits } from "./amount";
 import {
 	buildRequest,
 	decodeLink,
+	displayFieldsFrom,
 	encodeLink,
 	signRequest,
 	verifyRequest,
@@ -56,7 +57,14 @@ describe("parseAmount", () => {
 });
 
 describe("payment request signature", () => {
-	const request = buildRequest(ALICE.address, TOKEN, "2500000", "Logo", NOW);
+	const request = buildRequest(
+		ALICE.address,
+		TOKEN,
+		"2500000",
+		"Logo",
+		"",
+		NOW,
+	);
 
 	it("round-trips the signed request through the link", async () => {
 		const signature = await signRequest(signerFor(ALICE), ALICE, request);
@@ -111,8 +119,8 @@ describe("payment request signature", () => {
 	});
 
 	it("gives each request a unique nonce and a bounded expiry", () => {
-		const a = buildRequest(ALICE.address, TOKEN, "1000000", "", NOW);
-		const b = buildRequest(ALICE.address, TOKEN, "1000000", "", NOW + 1);
+		const a = buildRequest(ALICE.address, TOKEN, "1000000", "", "", NOW);
+		const b = buildRequest(ALICE.address, TOKEN, "1000000", "", "", NOW + 1);
 		expect(a.nonce).not.toBe(b.nonce);
 		expect(Number(b.expiry) - Number(b.nonce)).toBe(60 * 60 * 24 * 7);
 		expect(Number(a.expiry)).toBeGreaterThan(Number(a.nonce));
@@ -121,5 +129,52 @@ describe("payment request signature", () => {
 	it("returns null for a link that is not a request", () => {
 		expect(decodeLink("not-hex")).toBeNull();
 		expect(decodeLink("0xdeadbeef")).toBeNull();
+	});
+});
+
+describe("requester name transport", () => {
+	const request = buildRequest(
+		ALICE.address,
+		TOKEN,
+		"2500000",
+		"Logo",
+		"Sarah",
+		NOW,
+	);
+
+	it("carries the name in the URL so the payer sees who is asking", async () => {
+		const signature = await signRequest(signerFor(ALICE), ALICE, request);
+		const link = encodeLink(request, signature, ORIGIN);
+		const query = link.slice(link.indexOf("?"));
+		expect(new URLSearchParams(query).get("from")).toBe("Sarah");
+	});
+
+	it("does not let a swapped name affect verification", async () => {
+		const signature = await signRequest(signerFor(ALICE), ALICE, request);
+		const decoded = decodeLink(
+			new URL(encodeLink(request, signature, ORIGIN)).pathname.split(
+				"/pay/",
+			)[1],
+		)!;
+		// The name is display-only. Renaming the requester in the URL must not
+		// change whether the payment terms verify, and must not be signed over.
+		expect(await verifyRequest(decoded, signature)).toBe(true);
+		expect(
+			await verifyRequest(
+				{ ...decoded, requesterName: "Someone else" },
+				signature,
+			),
+		).toBe(true);
+	});
+
+	it("reads the name back out of a pay URL's query", () => {
+		expect(displayFieldsFrom({ d: "Logo", from: "Sarah" })).toEqual({
+			description: "Logo",
+			requesterName: "Sarah",
+		});
+		expect(displayFieldsFrom({})).toEqual({
+			description: "",
+			requesterName: "",
+		});
 	});
 });

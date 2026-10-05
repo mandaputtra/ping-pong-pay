@@ -32,6 +32,9 @@ export type PaymentRequest = {
 	nonce: string; // unix seconds
 	expiry: string; // unix seconds
 	description: string;
+	// Display-only, like description: it travels unsigned in the URL and is shown
+	// to the payer as the requester's name. It is not a payment term.
+	requesterName: string;
 };
 
 const requestTypes = {
@@ -57,6 +60,7 @@ export function buildRequest(
 	token: Address,
 	amount: string,
 	description: string,
+	requesterName = "",
 	now = Math.floor(Date.now() / 1000),
 ): PaymentRequest {
 	return {
@@ -66,6 +70,7 @@ export function buildRequest(
 		nonce: String(now),
 		expiry: String(now + REQUEST_EXPIRY_SECONDS),
 		description,
+		requesterName,
 	};
 }
 
@@ -131,14 +136,30 @@ export function encodeLink(
 		BigInt(r.expiry),
 		signature,
 	]);
-	// The description is prose, not a payment term, so it travels unsigned as a
-	// query param. verifyRequest ignores it; the pay screen shows it as the
-	// requester's note.
-	const note = r.description ? `?d=${encodeURIComponent(r.description)}` : "";
-	return `${origin}/pay/${encoded.slice(2)}${note}`;
+	// The description and the requester's name are display-only, not payment
+	// terms, so they travel unsigned as query params. verifyRequest ignores both;
+	// the pay screen shows them as the requester's own words. The amount,
+	// recipient and expiry are still verified cryptographically.
+	const params = new URLSearchParams();
+	if (r.description) params.set("d", r.description);
+	if (r.requesterName) params.set("from", r.requesterName);
+	const query = params.toString();
+	return `${origin}/pay/${encoded.slice(2)}${query ? `?${query}` : ""}`;
 }
 
 export type DecodedRequest = PaymentRequest & { signature: Hex };
+
+// Reads the display-only fields off the route's parsed search object. Kept
+// separate from decodeLink so nothing unsigned can ever reach verification.
+export function displayFieldsFrom(search: { d?: string; from?: string }): {
+	description: string;
+	requesterName: string;
+} {
+	return {
+		description: search.d ?? "",
+		requesterName: search.from ?? "",
+	};
+}
 
 export function decodeLink(slug: string): DecodedRequest | null {
 	try {
@@ -151,6 +172,7 @@ export function decodeLink(slug: string): DecodedRequest | null {
 			nonce: nonce.toString(),
 			expiry: expiry.toString(),
 			description: "",
+			requesterName: "",
 			signature: signature as Hex,
 		};
 	} catch {

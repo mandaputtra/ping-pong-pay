@@ -41,11 +41,11 @@ const signWith = (domain: { name: string; chainId: number }) =>
 		domain: { version: "1", ...domain },
 		types: REQUEST_TYPES,
 		primaryType: "Request",
-		message: terms(buildRequest(ALICE.address, TOKEN, "1000000", "", NOW)),
+		message: terms(buildRequest(ALICE.address, TOKEN, "1000000", "", "", NOW)),
 	});
 
 describe("expiry", () => {
-	const request = buildRequest(ALICE.address, TOKEN, "1000000", "", NOW);
+	const request = buildRequest(ALICE.address, TOKEN, "1000000", "", "", NOW);
 
 	it("allows payment before the expiry and refuses it at and after it", () => {
 		expect(isExpired(request, NOW + 10)).toBe(false);
@@ -56,7 +56,7 @@ describe("expiry", () => {
 });
 
 describe("chain and domain binding", () => {
-	const request = buildRequest(ALICE.address, TOKEN, "1000000", "", NOW);
+	const request = buildRequest(ALICE.address, TOKEN, "1000000", "", "", NOW);
 
 	it("refuses a signature made for another chain", async () => {
 		const foreign = await signWith({ name: "Ping Pong Pay", chainId: 1 });

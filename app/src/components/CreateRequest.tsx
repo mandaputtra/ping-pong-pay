@@ -13,6 +13,7 @@ export function CreateRequest({ recipient }: { recipient: `0x${string}` }) {
 	const { wallets } = useWallets();
 	const [amount, setAmount] = useState("");
 	const [description, setDescription] = useState("");
+	const [requesterName, setRequesterName] = useState("");
 	const [link, setLink] = useState("");
 	const [copied, setCopied] = useState(false);
 	const [error, setError] = useState("");
@@ -38,6 +39,7 @@ export function CreateRequest({ recipient }: { recipient: `0x${string}` }) {
 				USDC_TESTNET,
 				parsed.baseUnits,
 				description.trim(),
+				requesterName.trim(),
 			);
 			// Privy hands back an EIP-1193 provider; viem speaks it natively and
 			// resolves the signing account from eth_accounts.
@@ -74,6 +76,14 @@ export function CreateRequest({ recipient }: { recipient: `0x${string}` }) {
 	return (
 		<section className="ppp-card">
 			<h2>Request a payment</h2>
+			<label className="ppp-field">
+				<span>Your name</span>
+				<input
+					placeholder="Sarah"
+					value={requesterName}
+					onChange={(e) => setRequesterName(e.target.value)}
+				/>
+			</label>
 			<label className="ppp-field">
 				<span>Amount (USDC)</span>
 				<input
