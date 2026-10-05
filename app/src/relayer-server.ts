@@ -3,13 +3,21 @@ import { createServer } from "node:http";
 import { parseAddressBody } from "./lib/address.ts";
 import { TOPUP_AMOUNT, topUp } from "./lib/relayer.ts";
 
-const PORT = Number(process.env.PORT ?? 8791);
+// RELAYER_PORT, not PORT: on Fly both processes share one container and PORT is
+// already taken by the app. Falling back to PORT would crash on EADDRINUSE.
+const PORT = Number(process.env.RELAYER_PORT ?? 8791);
 
 // The app is served from a different origin, so the browser preflights this POST.
+// ALLOWED_ORIGIN pins it to the app's own origin: "*" on a publicly reachable
+// host would let any site on the internet spend this wallet's USDC, which is an
+// open faucet rather than a demo. Unset locally stays "*", where the host is
+// localhost and nothing else can reach it.
+const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN;
 const CORS = {
-	"access-control-allow-origin": "*",
+	"access-control-allow-origin": ALLOWED_ORIGIN ?? "*",
 	"access-control-allow-methods": "POST, OPTIONS",
 	"access-control-allow-headers": "content-type",
+	"access-control-max-age": "600",
 };
 
 function reply(res: ServerResponse, status: number, body: unknown) {

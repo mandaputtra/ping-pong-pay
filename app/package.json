@@ -13,7 +13,7 @@
     "format": "biome format",
     "lint": "biome lint",
     "check": "biome check",
-    "start": "vite preview",
+    "start": "node server.mjs",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "relayer": "node --experimental-strip-types --env-file=.env src/relayer-server.ts"
@@ -49,7 +49,10 @@
   "pnpm": {
     "onlyBuiltDependencies": [
       "esbuild",
-      "lightningcss"
+      "lightningcss",
+      "bufferutil",
+      "keccak",
+      "utf-8-validate"
     ]
   }
 }

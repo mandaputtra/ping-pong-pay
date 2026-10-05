@@ -1,0 +1,71 @@
+# Fly.io config. One machine runs both processes: the app on :3101 and the relayer
+# on :8791, reached as a split origin exactly like localhost:3101 -> localhost:8791.
+#
+#   fly launch --no-deploy --copy-config
+#   fly deploy --build-arg VITE_PRIVY_APP_ID=<id> --build-arg VITE_RELAYER_URL=<url>
+#   fly secrets set RELAYER_PRIVATE_KEY=0x... ALLOWED_ORIGIN=https://<app>.fly.dev
+#
+# VITE_* values are inlined by Vite at BUILD time, so they are build args, not
+# [env]. Setting them in [env] does nothing for the client bundle — a classic
+# and very quiet deployment mistake.
+#
+# RELAYER_PRIVATE_KEY must never carry a VITE_ prefix: that would ship it to the
+# browser.
+
+app = "ping-pong-pay"
+primary_region = "iad"
+
+[build]
+  dockerfile = "Dockerfile"
+  [build.args]
+    # Both are public by design. Override per deploy with --build-arg.
+    VITE_PRIVY_APP_ID = ""
+    VITE_RELAYER_URL = ""
+
+[env]
+  PORT = "3101"
+  RELAYER_PORT = "8791"
+  # ALLOWED_ORIGIN is intentionally absent: it is a secret. Set it with
+  # `fly secrets set`. It pins the relayer's CORS to this app's own origin.
+
+[http_service]
+  internal_port = 3101
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  # 0 keeps it off when idle. Raise to 1 before recording the demo: a cold start
+  # in the middle of the pay flow is a far worse failure than the hosting cost.
+  min_machines_running = 0
+
+  [http_service.concurrency]
+    type = "requests"
+    soft_limit = 20
+    hard_limit = 25
+
+  [[http_service.checks]]
+    interval = "15s"
+    timeout = "3s"
+    grace_period = "20s"
+    method = "GET"
+    path = "/"
+
+# The relayer is a separate service on its own Fly URL, not a subpath of the app:
+# Fly TCP services expose a port, they do not route by path. CORS is what keeps
+# it safe, and ALLOWED_ORIGIN pins that to the app's origin.
+[[services]]
+  protocol = "tcp"
+  internal_port = 8791
+  processes = ["app"]
+
+  [[services.ports]]
+    port = 8791
+
+  [[services.tcp_checks]]
+    interval = "15s"
+    timeout = "3s"
+    grace_period = "20s"
+
+[vm]
+  memory = "512mb"
+  cpu_kind = "shared"
+  cpus = 1
