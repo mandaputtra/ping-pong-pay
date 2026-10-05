@@ -68,8 +68,12 @@ Checks: `pnpm test` (unit tests) · `pnpm typecheck` · `pnpm check` (biome) · 
   EIP-712 before any signing prompt. No payment contract (see
   [`docs/adr/0001-offchain-invoices-no-escrow.md`](docs/adr/0001-offchain-invoices-no-escrow.md)).
 
-Key docs: [`AGENTS.md`](AGENTS.md) (stack, commands, gotchas) · [`CONTEXT.md`](CONTEXT.md)
-(glossary) · [`docs/`](docs/) (research, pitch deck, hackathon terms).
+Key docs: [`AGENTS.md`](AGENTS.md) (stack, commands, gotchas) ·
+[`CONTEXT.md`](CONTEXT.md) (glossary) ·
+[`docs/compliance-checklist.md`](docs/compliance-checklist.md) (submission gates) ·
+[`docs/bounty-checklist.md`](docs/bounty-checklist.md) ·
+[`docs/demo-script.md`](docs/demo-script.md) ·
+[`docs/manual-review.md`](docs/manual-review.md) · [`docs/`](docs/).
 
 ## AI tools and hackathon disclosure
 

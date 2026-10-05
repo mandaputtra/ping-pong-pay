@@ -5,6 +5,14 @@ slides. Unfilled placeholders shown as `[X]` / `[Y]` / `[Z]` / `[N]` remain unfi
 
 **Monad Metropolis Hackathon · Track 02, Consumer Products & Payments**
 
+> **AI tools disclosure (§4.1.4):** built with AI coding tools (Claude, GPT-5-class models)
+> for research, implementation, tests, review, and docs, under the author's direction.
+> Full disclosure in the README. MIT licensed.
+
+> **Known limits, stated up front:** cash out is a simulation with no bank connected;
+> activity history and replay protection read ~30 seconds of chain history, because
+> Monad's public RPC rejects wider log queries.
+
 ---
 
 ## 01 · Overview
