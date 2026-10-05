@@ -10,10 +10,13 @@ the money is yours in about a second. Built for the Monad Metropolis hackathon
 2. Top up demo USDC with one click.
 3. Create a payment request (amount + description) and share the link anywhere.
 4. Your client opens the link, sees who is asking for how much and why, taps Pay, confirms once.
-5. The balance updates live in dollars. Withdrawal is simulated in the demo.
+5. The balance updates live in dollars, and received payments appear in an activity list.
+6. Cash out is **simulated**: the screen is labelled as a demo, no bank is connected, and
+   no funds move. No real off-ramp ships.
 
-No escrow contract holds money — payments move directly wallet to wallet. See
-[`docs/getpaidnow-architecture.md`](docs/getpaidnow-architecture.md).
+No escrow contract holds money — payments move directly wallet to wallet. The reference
+architecture this product draws on is a different, escrow-based design, kept unmodified as a
+source document: [`docs/getpaidnow-architecture.md`](docs/getpaidnow-architecture.md).
 
 ## Run it
 

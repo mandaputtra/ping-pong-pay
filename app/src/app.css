@@ -161,6 +161,24 @@ button.ghost {
 	font-variant-numeric: tabular-nums;
 }
 
+.sim-badge {
+	display: inline-block;
+	margin: 0 0 var(--space-3);
+	padding: var(--space-1) var(--space-3);
+	font-size: 0.75rem;
+	font-weight: 600;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	color: var(--text-on-accent);
+	background: var(--accent);
+	border-radius: var(--radius-full);
+}
+
+.sim-note {
+	font-size: 0.875rem;
+	color: var(--text-muted);
+}
+
 /* Motion: opacity/transform only, never layout. See docs/demo-ux.md §1.
    The hidden state is attribute-scoped so it can never win a specificity tie
    against the shown state below - equal specificity would leave this to source

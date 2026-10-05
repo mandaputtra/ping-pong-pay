@@ -6,6 +6,7 @@ import { friendlyError, topUp } from "../lib/topup";
 import { getBalance } from "../lib/wallet";
 import { ActivityList } from "./ActivityList";
 import { CreateRequest } from "./CreateRequest";
+import { Withdraw } from "./Withdraw";
 
 function dollars(raw: string): string {
 	const [whole, frac = ""] = raw.split(".");
@@ -96,6 +97,7 @@ export function PingPongPay() {
 			</div>
 			<CreateRequest recipient={address} />
 			<ActivityList address={address} />
+			<Withdraw balance={balance} />
 			{error && (
 				<p role="alert" className="error">
 					{error}

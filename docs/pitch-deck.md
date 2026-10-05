@@ -72,12 +72,12 @@ but has no simple, safe alternative. Wants a payment that feels like a normal in
 - Sign up with Face ID or fingerprint
 - Create a request: amount + description
 - Share the link anywhere
-- Watch the balance update live, withdraw when you want
+- Watch the balance update live, cash out whenever (simulated in the demo)
 
 **Client**
 - Open the link: see amount, description, name
 - Sign in or sign up with Face ID
-- Optionally add a tip, then tap Pay
+- Optionally add a tip, then tap Pay (one confirmation, no gas prompt)
 - See "Payment sent". Nothing else to do
 
 > Confirmed on Monad in under a second. Tap to receipt in under 3 seconds.
@@ -122,6 +122,10 @@ but has no simple, safe alternative. Wants a payment that feels like a normal in
 ## 10 · Market Validation
 
 > **The market is moving here, and users shaped our product.**
+
+These are market figures about existing providers (Deel, Remote, Rise). They are
+context for the opportunity, **not** features of ping-pong pay — the demo ships no
+off-ramp and cash out is simulated.
 
 | | |
 |---|---|
