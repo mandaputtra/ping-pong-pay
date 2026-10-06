@@ -19,6 +19,7 @@
     "relayer": "node --experimental-strip-types --env-file=.env src/relayer-server.ts"
   },
   "dependencies": {
+    "@phosphor-icons/react": "^2.1.10",
     "@privy-io/react-auth": "^3.46.0",
     "@tailwindcss/vite": "^4.1.18",
     "@tanstack/react-devtools": "latest",

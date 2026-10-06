@@ -1,3 +1,4 @@
+import { ShieldCheck } from "@phosphor-icons/react";
 import { useLogin, usePrivy, useWallets } from "@privy-io/react-auth";
 import { useEffect, useState } from "react";
 import { createWalletClient, custom } from "viem";
@@ -141,7 +142,7 @@ export function PayRequest({
 		} catch {
 			setStage({
 				kind: "failed",
-				reason: "That didn't go through. Your money hasn't moved — try again.",
+				reason: "That didn't go through. Your money hasn't moved. Try again.",
 				request,
 			});
 		}
@@ -168,19 +169,30 @@ export function PayRequest({
 		const { receipt } = stage;
 		return (
 			<main className="ppp">
-				<p className="muted">Paid</p>
-				<h1>{usdFromBaseUnits(receipt.amount)}</h1>
-				<StatusSwap kind="swap" />
-				<p className="muted">{`Sent to ${receipt.recipient}`}</p>
-				<p className="muted">
-					{new Date(receipt.paidAt * 1000).toLocaleString("en-US", {
-						dateStyle: "medium",
-						timeStyle: "short",
-					})}
-				</p>
-				<a href={explorerTx(receipt.hash)} target="_blank" rel="noreferrer">
-					View on MonadScan
-				</a>
+				<div className="pay-receipt">
+					<p className="pay-receipt-status">
+						<StatusSwap kind="swap" />
+						Paid
+					</p>
+					<p className="pay-receipt-amount">
+						{usdFromBaseUnits(receipt.amount)}
+					</p>
+					<p className="pay-note">{`Sent to ${receipt.recipient}`}</p>
+					<p className="muted">
+						{new Date(receipt.paidAt * 1000).toLocaleString("en-US", {
+							dateStyle: "medium",
+							timeStyle: "short",
+						})}
+					</p>
+					<a
+						className="pay-explorer"
+						href={explorerTx(receipt.hash)}
+						target="_blank"
+						rel="noreferrer"
+					>
+						View on MonadScan
+					</a>
+				</div>
 			</main>
 		);
 	}
@@ -224,25 +236,56 @@ export function PayRequest({
 	}
 
 	const { request, alreadyPaid } = stage;
+	const who = requesterName || "this freelancer";
 	return (
 		<main className="ppp">
-			<h1>
-				{requesterName ? `${requesterName} is asking for` : "Payment request"}
-			</h1>
-			<p className="balance">{usdFromBaseUnits(request.amount)}</p>
-			{description && <p className="muted">{description}</p>}
-			<p className="muted">{`To ${request.recipient}`}</p>
-			{alreadyPaid ? (
-				<p className="muted">You already paid this.</p>
-			) : authenticated && user ? (
-				<button type="button" onClick={() => pay(request)}>
-					Pay {usdFromBaseUnits(request.amount)}
-				</button>
-			) : (
-				<button type="button" onClick={login}>
-					Get started
-				</button>
-			)}
+			<div className="mx-auto mt-8 max-w-sm rounded-[var(--radius-md)] border border-[var(--line)] bg-[var(--surface-card)] p-6 text-left shadow-[0_1px_2px_rgb(0_0_0/0.04),0_8px_24px_rgb(0_0_0/0.06)]">
+				<p className="flex items-center gap-2 rounded-[var(--radius-sm)] border border-teal-200 bg-teal-50 px-3 py-2 text-[13px] text-teal-900 dark:border-teal-900/60 dark:bg-teal-950/60 dark:text-teal-100">
+					<ShieldCheck
+						weight="fill"
+						aria-hidden="true"
+						className="size-4 shrink-0 text-teal-700 dark:text-teal-300"
+					/>
+					{`Verified request from ${who}`}
+				</p>
+				<p className="mt-6 text-[15px] text-[var(--text-muted)]">{`${who} is asking for`}</p>
+				<p className="mt-1 text-5xl leading-tight font-semibold tracking-tight tabular-nums">
+					{usdFromBaseUnits(request.amount)}
+				</p>
+				{description && (
+					<p className="mt-3 text-base text-[var(--text)]">{description}</p>
+				)}
+				<p className="mt-4 flex items-baseline gap-2 text-[13px] text-[var(--text-muted)]">
+					To
+					<code
+						className="bg-transparent p-0 text-[13px] text-[var(--text-muted)]"
+						title={request.recipient}
+					>
+						{`${request.recipient.slice(0, 6)}…${request.recipient.slice(-4)}`}
+					</code>
+				</p>
+				<p className="mt-5 border-t border-[var(--line)] pt-4 text-[13px] text-[var(--text-muted)]">
+					The amount is signed and cannot be changed. You approve it once, and
+					the money goes straight to {who}.
+				</p>
+				{alreadyPaid ? (
+					<button type="button" disabled className="btn-pay mt-5">
+						You already paid this
+					</button>
+				) : authenticated && user ? (
+					<button
+						type="button"
+						className="btn-pay mt-5"
+						onClick={() => pay(request)}
+					>
+						{`Pay ${usdFromBaseUnits(request.amount)}`}
+					</button>
+				) : (
+					<button type="button" className="btn-pay mt-5" onClick={login}>
+						Get started
+					</button>
+				)}
+			</div>
 		</main>
 	);
 }

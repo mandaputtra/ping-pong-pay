@@ -47,9 +47,8 @@ export function Withdraw({ balance }: { balance: string }) {
 		<section className="ppp-card">
 			<h2>Cash out</h2>
 			<p className="sim-badge" role="note">
-				Simulated — no real money moves
+				Simulated. No real money moves.
 			</p>
-
 			{stage.kind === "done" ? (
 				<div>
 					<p className="balance-sm">{usdFromBaseUnits(requested.toString())}</p>

@@ -55,12 +55,16 @@ describe("payer-facing copy is jargon-free", () => {
 			const offenders: string[] = [];
 			for (const file of files) {
 				const source = readFileSync(file, "utf8");
-				// Only look at strings and JSX text, not identifiers or ABI types.
+				// Only strings a payer can read: copy keys, JSX text nodes, and
+				// template literals. Template literals are included because most
+				// pay-screen copy is `Who is asking for` style interpolation, and
+				// missing them let the word "escrow" through unnoticed.
 				const rendered = [
 					...source.matchAll(/title:\s*"([^"]*)"/g),
 					...source.matchAll(/body:\s*"([^"]*)"/g),
 					...source.matchAll(/reason:\s*"([^"]*)"/g),
 					...source.matchAll(/>\s*([A-Z][^<>{}]{6,})\s*</g),
+					...source.matchAll(/`([^`${]*)`/g),
 				]
 					.map((m) => m[1])
 					.join("\n")

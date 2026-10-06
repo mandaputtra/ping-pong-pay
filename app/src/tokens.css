@@ -21,6 +21,8 @@
 	--accent: light-dark(#1a4cff, #6f8bff);
 	--text-on-accent: #ffffff;
 	--danger: light-dark(#b3261e, #ffb4ab);
+	--success: light-dark(#047857, #34d399);
+	--surface-card: light-dark(#fbfcfd, #111827);
 
 	/* M3 duration tokens */
 	--motion-short: 150ms;
