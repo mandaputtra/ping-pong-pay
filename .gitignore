@@ -11,3 +11,6 @@ dist-ssr
 .vinxi
 __unconfig*
 todos.json
+
+# Throwaway design workspace for the pen.dev CLI
+.tmp-design/
