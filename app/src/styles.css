@@ -138,21 +138,25 @@ a:hover {
   color: #246f76;
 }
 
-code {
-  font-size: 0.9em;
-  border: 1px solid var(--line);
-  background: color-mix(in oklab, var(--surface-strong) 82%, white 18%);
-  border-radius: 7px;
-  padding: 2px 7px;
+/* Scoped to the legacy shell. An unlayered element selector outranks every
+   Tailwind utility, so the pay screen's inline address chip could not strip the
+   decorative chip styling this rule adds. */
+.ppp code,
+pre code {
+	font-size: 0.9em;
+	border: 1px solid var(--line);
+	background: color-mix(in oklab, var(--surface-strong) 82%, white 18%);
+	border-radius: 7px;
+	padding: 2px 7px;
 }
 
 pre code {
-  border: 0;
-  background: transparent;
-  padding: 0;
-  border-radius: 0;
-  font-size: inherit;
-  color: inherit;
+	border: 0;
+	background: transparent;
+	padding: 0;
+	border-radius: 0;
+	font-size: inherit;
+	color: inherit;
 }
 
 .page-wrap {

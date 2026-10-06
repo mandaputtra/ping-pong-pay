@@ -24,6 +24,20 @@
 	--success: light-dark(#047857, #34d399);
 	--surface-card: light-dark(#fbfcfd, #111827);
 
+	/* Payment-screen tokens, mapped from the pen.dev design. --surface-card,
+	   --text, --accent and --success already carried these exact dark values, so
+	   only the ones with no equivalent are new. Light values are the same hues
+	   held to a legible contrast; dark is the designed value. */
+	--pay-bg: light-dark(#f4f7f8, #0b0f19);
+	--surface-elevated: light-dark(#ffffff, #1a2332);
+	--line-card: light-dark(#d8e0e4, #1f2937);
+	--text-subtle: light-dark(#5c6672, #6b7280);
+	--accent-teal: light-dark(#0f7c74, #56c6be);
+	--accent-teal-dim: light-dark(
+		rgba(15, 124, 116, 0.09),
+		rgba(86, 198, 190, 0.2)
+	);
+
 	/* M3 duration tokens */
 	--motion-short: 150ms;
 	--motion-medium: 300ms;

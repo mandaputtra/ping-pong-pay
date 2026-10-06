@@ -1,4 +1,4 @@
-import { ShieldCheck } from "@phosphor-icons/react";
+import { CalendarBlank, Lock, ShieldCheck } from "@phosphor-icons/react";
 import { useLogin, usePrivy, useWallets } from "@privy-io/react-auth";
 import { useEffect, useState } from "react";
 import { createWalletClient, custom } from "viem";
@@ -35,6 +35,27 @@ type Stage =
 	| { kind: "paid"; receipt: Receipt }
 	| { kind: "needsWallet" }
 	| { kind: "failed"; reason: string; request: DecodedRequest };
+
+// The pen drew this at 390px, so there is no desktop layout to scale up into.
+// Past 600px the card stops growing and sits centred rather than stretching into a
+// shape the design never intended.
+const SHELL =
+	"mx-auto flex min-h-[calc(100dvh-4rem)] w-full max-w-[600px] flex-col justify-center px-4 py-8";
+const CARD =
+	"rounded-[20px] border border-[var(--line-card)] bg-[var(--surface-card)] p-6 text-center shadow-[0_18px_44px_rgb(2_6_23/0.28)] sm:p-8";
+// Dark ink on the accent fills, not white. White on the violet is 3.08:1 and on
+// the teal 2.05:1; both fail WCAG AA for 17px text. Dark ink passes at 6.2:1 and
+// 9.3:1 and is what every real fintech CTA does on a saturated fill.
+const CTA = (fill: "violet" | "teal") =>
+	`flex min-h-[52px] w-full items-center justify-center rounded-[14px] text-[17px] font-semibold transition-[background-color,transform] duration-150 ease-out active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60 ${
+		fill === "teal"
+			? "bg-[var(--accent-teal)] text-[#04201e]"
+			: "bg-[var(--accent)] text-white"
+	}`;
+
+function shortAddress(address: string): string {
+	return `${address.slice(0, 6)}…${address.slice(-4)}`;
+}
 
 export function PayRequest({
 	slug,
@@ -150,17 +171,25 @@ export function PayRequest({
 
 	if (stage.kind === "checking" || !ready) {
 		return (
-			<main className="ppp">
-				<h1>Checking request…</h1>
+			<main className={SHELL}>
+				<p className="text-center text-sm text-[var(--text-muted)]">
+					Checking request…
+				</p>
 			</main>
 		);
 	}
 
 	if (stage.kind === "refused") {
 		return (
-			<main className="ppp">
-				<h1>{refusalTitle(stage.reason)}</h1>
-				<p className="muted">{refusalBody(stage.reason)}</p>
+			<main className={SHELL}>
+				<div className={CARD}>
+					<p className="text-sm font-semibold tracking-wide text-[var(--danger)] uppercase">
+						{refusalTitle(stage.reason)}
+					</p>
+					<p className="mt-3 text-base text-[var(--text-muted)]">
+						{refusalBody(stage.reason)}
+					</p>
+				</div>
 			</main>
 		);
 	}
@@ -168,24 +197,42 @@ export function PayRequest({
 	if (stage.kind === "paid") {
 		const { receipt } = stage;
 		return (
-			<main className="ppp">
-				<div className="pay-receipt">
-					<p className="pay-receipt-status">
+			<main className={SHELL}>
+				<div className={CARD}>
+					<div
+						className="mx-auto flex size-16 items-center justify-center rounded-full bg-[rgba(52,211,153,0.09)]"
+						aria-hidden="true"
+					>
 						<StatusSwap kind="swap" />
+					</div>
+					<p className="mt-6 text-sm font-semibold tracking-widest text-[var(--success)] uppercase">
 						Paid
 					</p>
-					<p className="pay-receipt-amount">
+					<p className="mt-2 text-[48px] leading-[1.1] font-bold tracking-tight tabular-nums">
 						{usdFromBaseUnits(receipt.amount)}
 					</p>
-					<p className="pay-note">{`Sent to ${receipt.recipient}`}</p>
-					<p className="muted">
+					{description && (
+						<p className="mt-1.5 text-[15px] text-[var(--text-muted)]">
+							{description}
+						</p>
+					)}
+					<p className="mt-7 text-xs text-[var(--text-subtle)]">Sent to</p>
+					<p className="mt-0.5 text-[13px] font-medium text-[var(--text-muted)]">
+						{shortAddress(receipt.recipient)}
+					</p>
+					<p className="mt-3 flex items-center justify-center gap-1.5 text-xs text-[var(--text-subtle)]">
+						<CalendarBlank
+							weight="fill"
+							aria-hidden="true"
+							className="size-3"
+						/>
 						{new Date(receipt.paidAt * 1000).toLocaleString("en-US", {
 							dateStyle: "medium",
 							timeStyle: "short",
 						})}
 					</p>
 					<a
-						className="pay-explorer"
+						className="mt-8 inline-block text-[13px] text-[var(--text-subtle)] underline underline-offset-4 transition-colors hover:text-[var(--text-muted)]"
 						href={explorerTx(receipt.hash)}
 						target="_blank"
 						rel="noreferrer"
@@ -199,89 +246,124 @@ export function PayRequest({
 
 	if (stage.kind === "needsWallet") {
 		return (
-			<main className="ppp">
-				<h1>Create your wallet to pay</h1>
-				<p className="muted">One tap. No seed phrase, no app install.</p>
-				<button type="button" onClick={login}>
-					Get started
-				</button>
+			<main className={SHELL}>
+				<div className={CARD}>
+					<h1 className="text-xl font-bold">Create your wallet to pay</h1>
+					<p className="mt-2 text-sm text-[var(--text-muted)]">
+						One tap. No seed phrase, no app install.
+					</p>
+					<button
+						type="button"
+						className={`${CTA("violet")} mt-6`}
+						onClick={login}
+					>
+						Get started
+					</button>
+				</div>
 			</main>
 		);
 	}
 
 	if (stage.kind === "submitting" || stage.kind === "confirming") {
 		return (
-			<main className="ppp">
-				<h1>
-					{stage.kind === "submitting"
-						? "Waiting for your approval…"
-						: "Finishing your payment…"}
-				</h1>
-				<p className="muted">This takes a second.</p>
-				<StatusSwap kind="pending" />
+			<main className={SHELL}>
+				<div className={CARD}>
+					<StatusSwap kind="pending" />
+					<h1 className="mt-4 text-xl font-bold">
+						{stage.kind === "submitting"
+							? "Waiting for your approval…"
+							: "Finishing your payment…"}
+					</h1>
+					<p className="mt-2 text-sm text-[var(--text-muted)]">
+						This takes a second.
+					</p>
+				</div>
 			</main>
 		);
 	}
 
 	if (stage.kind === "failed") {
 		return (
-			<main className="ppp">
-				<h1>That didn't go through</h1>
-				<p className="muted">{stage.reason}</p>
-				<button type="button" onClick={() => pay(stage.request)}>
-					Try again
-				</button>
+			<main className={SHELL}>
+				<div className={CARD}>
+					<p className="text-sm font-semibold tracking-wide text-[var(--danger)] uppercase">
+						That didn't go through
+					</p>
+					<p className="mt-3 text-base text-[var(--text-muted)]">
+						{stage.reason}
+					</p>
+					<button
+						type="button"
+						className={`${CTA("violet")} mt-6`}
+						onClick={() => pay(stage.request)}
+					>
+						Try again
+					</button>
+				</div>
 			</main>
 		);
 	}
 
 	const { request, alreadyPaid } = stage;
 	const who = requesterName || "this freelancer";
+	const amount = usdFromBaseUnits(request.amount);
+	// The pen flips the CTA colour once the payer is signed in: violet while there
+	// is still a login step between them and the payment, teal when the next tap
+	// moves the money. Teal is the action colour across the product, so the flip
+	// means something rather than being decoration.
+	const signedIn = Boolean(authenticated && user);
 	return (
-		<main className="ppp">
-			<div className="mx-auto mt-8 max-w-sm rounded-[var(--radius-md)] border border-[var(--line)] bg-[var(--surface-card)] p-6 text-left shadow-[0_1px_2px_rgb(0_0_0/0.04),0_8px_24px_rgb(0_0_0/0.06)]">
-				<p className="flex items-center gap-2 rounded-[var(--radius-sm)] border border-teal-200 bg-teal-50 px-3 py-2 text-[13px] text-teal-900 dark:border-teal-900/60 dark:bg-teal-950/60 dark:text-teal-100">
-					<ShieldCheck
-						weight="fill"
-						aria-hidden="true"
-						className="size-4 shrink-0 text-teal-700 dark:text-teal-300"
-					/>
+		<main className={SHELL}>
+			<div className={CARD}>
+				<p className="flex items-center justify-center gap-2 pb-3 text-[13px] font-semibold tracking-[0.5px] text-[var(--accent-teal)]">
+					<ShieldCheck weight="fill" aria-hidden="true" className="size-4" />
 					{`Verified request from ${who}`}
 				</p>
-				<p className="mt-6 text-[15px] text-[var(--text-muted)]">{`${who} is asking for`}</p>
-				<p className="mt-1 text-5xl leading-tight font-semibold tracking-tight tabular-nums">
-					{usdFromBaseUnits(request.amount)}
+				<div className="border-t border-[var(--line-card)]" />
+				<p className="mt-4 text-sm text-[var(--text-muted)]">{`${who} is asking for`}</p>
+				<p className="mt-1 text-[56px] leading-[1.1] font-bold tracking-tight tabular-nums">
+					{amount}
 				</p>
 				{description && (
-					<p className="mt-3 text-base text-[var(--text)]">{description}</p>
+					<p className="mt-2 text-base text-[var(--text-muted)]">
+						{description}
+					</p>
 				)}
-				<p className="mt-4 flex items-baseline gap-2 text-[13px] text-[var(--text-muted)]">
+				<p className="mt-6 flex items-center justify-center gap-2 text-xs text-[var(--text-subtle)]">
+					<span
+						className="size-5 shrink-0 rounded-full bg-[var(--surface-elevated)]"
+						aria-hidden="true"
+					/>
 					To
 					<code
-						className="bg-transparent p-0 text-[13px] text-[var(--text-muted)]"
+						className="rounded-none border-0 bg-transparent p-0 text-xs font-medium text-[var(--text-subtle)]"
 						title={request.recipient}
 					>
-						{`${request.recipient.slice(0, 6)}…${request.recipient.slice(-4)}`}
+						{shortAddress(request.recipient)}
 					</code>
 				</p>
-				<p className="mt-5 border-t border-[var(--line)] pt-4 text-[13px] text-[var(--text-muted)]">
-					The amount is signed and cannot be changed. You approve it once, and
-					the money goes straight to {who}.
+				<p className="mt-5 flex items-center justify-center gap-1.5 rounded-[10px] bg-[var(--accent-teal-dim)] px-3 py-2.5 text-xs text-[var(--accent-teal)]">
+					<Lock weight="fill" aria-hidden="true" className="size-3 shrink-0" />
+					The amount is signed and cannot be changed.
 				</p>
 				{alreadyPaid ? (
-					<button type="button" disabled className="btn-pay mt-5">
+					<button type="button" disabled className={`${CTA("teal")} mt-6`}>
 						You already paid this
 					</button>
-				) : authenticated && user ? (
+				) : signedIn ? (
 					<button
 						type="button"
-						className="btn-pay mt-5"
+						className={`${CTA("teal")} mt-6`}
 						onClick={() => pay(request)}
 					>
-						{`Pay ${usdFromBaseUnits(request.amount)}`}
+						{`Pay ${amount}`}
 					</button>
 				) : (
-					<button type="button" className="btn-pay mt-5" onClick={login}>
+					<button
+						type="button"
+						className={`${CTA("violet")} mt-6`}
+						onClick={login}
+					>
 						Get started
 					</button>
 				)}
