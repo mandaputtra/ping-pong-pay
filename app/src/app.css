@@ -7,7 +7,7 @@
 body {
 	margin: 0;
 	font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-	background: var(--surface);
+	background: var(--pay-bg);
 	color: var(--text);
 	min-height: 100dvh;
 	transition: background var(--motion-medium) var(--ease-standard);

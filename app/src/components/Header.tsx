@@ -6,8 +6,8 @@ import { Link } from "@tanstack/react-router";
 // is the same at every width.
 export default function Header() {
 	return (
-		<header className="sticky top-0 z-50 border-b border-[var(--line-card)] bg-[var(--pay-bg)]/85 px-4 backdrop-blur-lg">
-			<div className="mx-auto flex h-12 w-full max-w-[600px] items-center justify-between">
+		<header className="sticky top-0 z-50 border-b border-[var(--line-card)] bg-[var(--pay-bg)]/85 backdrop-blur-lg">
+			<div className="flex h-12 w-full items-center justify-between px-4">
 				<Link
 					to="/"
 					className="inline-flex items-center gap-2 text-sm font-semibold tracking-tight text-[var(--text)] no-underline"

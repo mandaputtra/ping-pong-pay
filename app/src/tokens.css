@@ -38,6 +38,14 @@
 		rgba(86, 198, 190, 0.2)
 	);
 
+	/* The pen's background wash: one soft accent glow behind the card, kept low
+	   enough to read as depth rather than as a second accent. */
+	--pay-glow: light-dark(rgba(111, 139, 255, 0.14), rgba(111, 139, 255, 0.08));
+	--pay-glow-teal: light-dark(
+		rgba(86, 198, 190, 0.14),
+		rgba(86, 198, 190, 0.06)
+	);
+
 	/* M3 duration tokens */
 	--motion-short: 150ms;
 	--motion-medium: 300ms;

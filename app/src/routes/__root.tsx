@@ -42,11 +42,21 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 			{
 				title: "Ping Pong Pay",
 			},
+			{
+				name: "description",
+				content:
+					"Easy dollar payments for freelancers. Send a link, get paid in seconds, no crypto fuss.",
+			},
 		],
 		links: [
 			{
 				rel: "stylesheet",
 				href: appCss,
+			},
+			{
+				rel: "icon",
+				href: "/favicon.svg",
+				type: "image/svg+xml",
 			},
 		],
 	}),
@@ -73,13 +83,21 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 						},
 					}}
 				>
-					<Header />
-					{children}
-					<Footer />
+					<a
+						href="#main"
+						className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:rounded-[var(--radius-sm)] focus:bg-[var(--surface-card)] focus:px-3 focus:py-2 focus:text-sm"
+					>
+						Skip to content
+					</a>
+					<div className="pay-column">
+						<Header />
+						{children}
+						<Footer />
+					</div>
 				</PrivyProvider>
 				{/* Devtools ship in the production bundle unless gated, and a
 				    floating debug panel in a hackathon submission reads as an
-				    unfinished build. */} 
+				    unfinished build. */}
 				{import.meta.env.DEV && (
 					<TanStackDevtools
 						config={{
