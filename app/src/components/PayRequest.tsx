@@ -43,8 +43,10 @@ type Stage =
 // voids above and below it. The outer page column owns the background and the
 // header/footer edges; this shell only places the card.
 const SHELL = "w-full px-4 pt-6 pb-2";
+// Bottom padding is a step larger than the top. The CTA is the last element in
+// the card and symmetric padding reads as cramped under it.
 const CARD =
-	"rounded-[20px] border border-[var(--line-card)] bg-[var(--surface-card)] p-6 text-center shadow-[0_18px_44px_rgb(2_6_23/0.28)] sm:p-8";
+	"rounded-[20px] border border-[var(--line-card)] bg-[var(--surface-card)] px-6 pt-6 pb-8 text-center shadow-[0_18px_44px_rgb(2_6_23/0.28)] sm:px-8 sm:pt-8 sm:pb-10";
 // Dark ink on the accent fills, not white. White on the violet is 3.08:1 and on
 // the teal 2.05:1; both fail WCAG AA for 17px text. Dark ink passes at 6.2:1 and
 // 9.3:1 and is what every real fintech CTA does on a saturated fill.

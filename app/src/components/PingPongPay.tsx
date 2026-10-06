@@ -50,7 +50,7 @@ export function PingPongPay() {
 
 	if (!ready) {
 		return (
-			<main className="ppp">
+			<main className="ppp ppp-center">
 				<h1>Ping Pong Pay</h1>
 				<p className="muted">Loading…</p>
 			</main>
@@ -59,7 +59,7 @@ export function PingPongPay() {
 
 	if (address === null) {
 		return (
-			<main className="ppp">
+			<main className="ppp ppp-center">
 				<h1>Ping Pong Pay</h1>
 				<p className="muted">
 					Easy dollar payments. No passwords, no crypto fuss.
@@ -77,7 +77,7 @@ export function PingPongPay() {
 	}
 
 	return (
-		<main className="ppp">
+		<main className="ppp ppp-center">
 			<h1>Ping Pong Pay</h1>
 			<p className="muted">{`${address.slice(0, 6)}…${address.slice(-4)}`}</p>
 			<p className="balance">{dollars(balance)}</p>
