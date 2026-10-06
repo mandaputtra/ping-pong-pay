@@ -38,9 +38,10 @@ type Stage =
 
 // The pen drew this at 390px, so there is no desktop layout to scale up into.
 // Past 600px the card stops growing and sits centred rather than stretching into a
-// shape the design never intended.
-const SHELL =
-	"mx-auto flex min-h-[calc(100dvh-4rem)] w-full max-w-[600px] flex-col justify-center px-4 py-8";
+// shape the design never intended. Height is left to the content: a full-height
+// shell plus justify-center parked the card in the middle of tall viewports and
+// left a void above and below it, where the reference puts content at the top.
+const SHELL = "mx-auto w-full max-w-[600px] px-4 pt-6 pb-2";
 const CARD =
 	"rounded-[20px] border border-[var(--line-card)] bg-[var(--surface-card)] p-6 text-center shadow-[0_18px_44px_rgb(2_6_23/0.28)] sm:p-8";
 // Dark ink on the accent fills, not white. White on the violet is 3.08:1 and on
