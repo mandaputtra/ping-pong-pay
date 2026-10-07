@@ -1,7 +1,7 @@
 import type { ServerResponse } from "node:http";
 import { createServer } from "node:http";
 import { parseAddressBody } from "./lib/address.ts";
-import { TOPUP_AMOUNT, topUp } from "./lib/relayer.ts";
+import { TOPUP_AMOUNT, relayerAccount, topUp } from "./lib/relayer.ts";
 
 // RELAYER_PORT, not PORT: on Fly both processes share one container and PORT is
 // already taken by the app. Falling back to PORT would crash on EADDRINUSE.
@@ -30,6 +30,18 @@ const server = createServer(async (req, res) => {
 		res.writeHead(204, CORS);
 		return res.end();
 	}
+	// A GET /health that only answers when the keys and the amount the server
+	// will spend are in place. Fly's check hits this; anything under /topup
+	// would spend or collide with the faucet's own validation errors.
+	if (req.method === "GET" && req.url === "/health") {
+		try {
+			relayerAccount();
+		} catch {
+			return reply(res, 503, { error: "no key" });
+		}
+		return reply(res, 200, { ok: true, amount: TOPUP_AMOUNT.toString() });
+	}
+
 	if (req.method !== "POST" || req.url !== "/topup")
 		return reply(res, 404, { error: "not found" });
 

@@ -20,7 +20,7 @@ const publicClient = createPublicClient({
 	transport: http(),
 });
 
-function relayerAccount() {
+export function relayerAccount() {
 	const key = process.env.RELAYER_PRIVATE_KEY;
 	if (!key) throw new Error("RELAYER_PRIVATE_KEY is not set");
 	return privateKeyToAccount(key as `0x${string}`);

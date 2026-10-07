@@ -1,0 +1,35 @@
+# syntax=docker/dockerfile:1
+
+# Relayer only: the /topup faucet on its own Fly app with its own TLS cert.
+# Same stack as the main image (pnpm frozen lockfile, non-root), but it ships
+# only its own import closure — src/relayer-server.ts plus src/lib/{address,
+# relayer, cap}.ts and node_modules — not the browser bundle.
+
+FROM node:22-slim AS base
+ENV PNPM_HOME=/pnpm
+ENV PATH="$PNPM_HOME:$PATH"
+RUN corepack enable
+WORKDIR /app
+
+# ---- dependencies -----------------------------------------------------------
+FROM base AS deps
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+RUN pnpm install --frozen-lockfile --prod
+
+# ---- runtime ----------------------------------------------------------------
+FROM base AS runtime
+ENV NODE_ENV=production
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/package.json ./package.json
+COPY src/relayer-server.ts ./relayer-server.ts
+COPY src/lib/address.ts ./lib/address.ts
+COPY src/lib/relayer.ts ./lib/relayer.ts
+COPY src/lib/cap.ts ./lib/cap.ts
+
+# Non-root: this process holds the hot wallet key and has no reason to be root.
+# Type stripping needs no build and no toolchain in the image.
+RUN useradd --create-home --shell /bin/bash appuser && chown -R appuser:appuser /app
+USER appuser
+
+EXPOSE 8791
+CMD ["node", "--experimental-strip-types", "relayer-server.ts"]
