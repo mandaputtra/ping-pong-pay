@@ -12,6 +12,9 @@
 
 	--radius-sm: 6px;
 	--radius-md: 10px;
+	/* The pay-screen CTA corner. One step up from --radius-md so primary
+	   actions read heavier than inline chips without a second scale. */
+	--radius-btn: 14px;
 	--radius-full: 999px;
 
 	--surface: light-dark(#ffffff, #14161a);
@@ -19,7 +22,9 @@
 	--text: light-dark(#14161a, #f2f4f7);
 	--text-muted: light-dark(#5b6472, #9aa4b2);
 	--accent: light-dark(#1a4cff, #6f8bff);
-	--text-on-accent: #ffffff;
+	/* White ink is 3.08:1 on the dark-mode violet, failing AA; dark ink is
+	   6.2:1. Light-mode violet is dark enough for white. */
+	--text-on-accent: light-dark(#ffffff, #0b0f19);
 	--danger: light-dark(#b3261e, #ffb4ab);
 	--success: light-dark(#047857, #34d399);
 	--surface-card: light-dark(#fbfcfd, #111827);

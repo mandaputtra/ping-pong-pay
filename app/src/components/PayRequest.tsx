@@ -47,14 +47,14 @@ const SHELL = "w-full px-4 pt-6 pb-2";
 // the card and symmetric padding reads as cramped under it.
 const CARD =
 	"rounded-[20px] border border-[var(--line-card)] bg-[var(--surface-card)] px-6 pt-6 pb-8 text-center shadow-[0_18px_44px_rgb(2_6_23/0.28)] sm:px-8 sm:pt-8 sm:pb-10";
-// Dark ink on the accent fills, not white. White on the violet is 3.08:1 and on
-// the teal 2.05:1; both fail WCAG AA for 17px text. Dark ink passes at 6.2:1 and
-// 9.3:1 and is what every real fintech CTA does on a saturated fill.
+// Dark ink on the accent fills. White on the violet is 3.08:1 and on the teal
+// 2.05:1; both fail WCAG AA for 17px text. Dark ink passes at 6.2:1 and 9.3:1
+// and is what every real fintech CTA does on a saturated fill.
 const CTA = (fill: "violet" | "teal") =>
 	`flex min-h-[52px] w-full items-center justify-center rounded-[14px] text-[17px] font-semibold transition-[background-color,transform] duration-150 ease-out active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60 ${
 		fill === "teal"
 			? "bg-[var(--accent-teal)] text-[#04201e]"
-			: "bg-[var(--accent)] text-white"
+			: "bg-[var(--accent)] text-[var(--text-on-accent)]"
 	}`;
 
 function shortAddress(address: string): string {

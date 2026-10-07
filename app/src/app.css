@@ -34,14 +34,14 @@ h1 {
    rounded/bg/size silently lost to these declarations. */
 .ppp button,
 button.ghost {
-	font-size: 1rem;
+	font-size: 1.0625rem;
 	padding: var(--space-3) var(--space-4);
 	/* Room between the button and the copy above it. The label stays optically
 	   centred because this is margin, not extra padding. */
 	margin-top: var(--space-2);
-	min-height: var(--target-min);
+	min-height: 52px;
 	border: 0;
-	border-radius: var(--radius-md);
+	border-radius: var(--radius-btn);
 	background: var(--accent);
 	color: var(--text-on-accent);
 	cursor: pointer;
