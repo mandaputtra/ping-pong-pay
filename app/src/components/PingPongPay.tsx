@@ -1,12 +1,12 @@
-import { ArrowUpRight } from "@phosphor-icons/react";
 import { useLogin, useLogout, usePrivy } from "@privy-io/react-auth";
 import { useEffect, useState } from "react";
 import type { Address } from "viem";
 import { fetchUser, saveShortName } from "../lib/api";
 import { privyWalletAddress } from "../lib/privy-user";
-import { friendlyError, topUp } from "../lib/topup";
+import { friendlyError } from "../lib/topup";
 import { getBalance } from "../lib/wallet";
 import { ActivityList } from "./ActivityList";
+import { RequestTile } from "./CreateRequest";
 import { WithdrawTile } from "./Withdraw";
 
 function dollars(raw: string): string {
@@ -26,7 +26,6 @@ export function PingPongPay() {
 	const { logout } = useLogout();
 	const [balance, setBalance] = useState("0.00");
 	const [error, setError] = useState("");
-	const [busy, setBusy] = useState(false);
 	// The short name greets the user and signs their links. Unknown until the
 	// database says otherwise: null means "not asked yet", not "no name".
 	const [shortName, setShortName] = useState<string | null>(null);
@@ -54,23 +53,6 @@ export function PingPongPay() {
 			setError(friendlyError(err)),
 		);
 	}, [address]);
-
-	async function addMoney() {
-		if (!address) {
-			setError("Please sign in first.");
-			return;
-		}
-		setError("");
-		setBusy(true);
-		try {
-			await topUp(address);
-			setBalance(await getBalance(address));
-		} catch (err) {
-			setError(friendlyError(err));
-		} finally {
-			setBusy(false);
-		}
-	}
 
 	if (!ready) {
 		return (
@@ -183,24 +165,7 @@ export function PingPongPay() {
 				</p>
 			</section>
 			<div className="mt-3 grid grid-cols-2 gap-3">
-				<button
-					type="button"
-					onClick={addMoney}
-					disabled={busy}
-					className="rounded-[18px] border border-[var(--line)] bg-[var(--card)] p-4 text-left transition-transform duration-150 ease-out active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
-				>
-					<ArrowUpRight
-						weight="bold"
-						aria-hidden="true"
-						className="size-5 text-[var(--teal)]"
-					/>
-					<span className="mt-2 block text-[15px] font-bold text-[var(--ink)]">
-						Request payment
-					</span>
-					<span className="mt-1 block text-[13px] leading-snug text-[var(--ink-soft)]">
-						Send a clear link in under a minute.
-					</span>
-				</button>
+				<RequestTile recipient={address} />
 				<WithdrawTile balance={balance} />
 			</div>
 			<ActivityList address={address} />

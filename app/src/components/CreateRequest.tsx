@@ -1,12 +1,47 @@
-import { fileRequest } from "../lib/api";
+import { ArrowUpRight } from "@phosphor-icons/react";
 import { useWallets } from "@privy-io/react-auth";
 import { useState } from "react";
 import { createWalletClient, custom } from "viem";
 import { monadTestnet } from "viem/chains";
 import { saveNote } from "../lib/activity";
 import { parseAmount } from "../lib/amount";
+import { fileRequest } from "../lib/api";
 import { buildRequest, encodeLink, signRequest } from "../lib/request";
 import { USDC_TESTNET } from "../lib/wallet";
+import { Sheet } from "./Sheet";
+
+// The reference puts Request beside Withdraw as a tile. The tile opens a
+// bottom sheet with the same signing flow; the link result renders inside the
+// sheet, so the homepage never grows a form section.
+export function RequestTile({ recipient }: { recipient: `0x${string}` }) {
+	const [open, setOpen] = useState(false);
+	if (!open) {
+		return (
+			<button
+				type="button"
+				onClick={() => setOpen(true)}
+				className="rounded-[18px] border border-[var(--line)] bg-[var(--card)] p-4 text-left transition-transform duration-150 ease-out active:scale-[0.98]"
+			>
+				<ArrowUpRight
+					weight="bold"
+					aria-hidden="true"
+					className="size-5 text-[var(--teal)]"
+				/>
+				<span className="mt-2 block text-[15px] font-bold text-[var(--ink)]">
+					Request payment
+				</span>
+				<span className="mt-1 block text-[13px] leading-snug text-[var(--ink-soft)]">
+					Send a clear link in under a minute.
+				</span>
+			</button>
+		);
+	}
+	return (
+		<Sheet title="Request a payment" onClose={() => setOpen(false)}>
+			<CreateRequest recipient={recipient} />
+		</Sheet>
+	);
+}
 
 export function CreateRequest({ recipient }: { recipient: `0x${string}` }) {
 	const { wallets } = useWallets();
@@ -92,7 +127,7 @@ export function CreateRequest({ recipient }: { recipient: `0x${string}` }) {
 	}
 
 	return (
-		<section className="ppp-card">
+		<>
 			<h2>Request a payment</h2>
 			<label className="ppp-field">
 				<span>Your name</span>
@@ -136,6 +171,6 @@ export function CreateRequest({ recipient }: { recipient: `0x${string}` }) {
 					{error}
 				</p>
 			)}
-		</section>
+		</>
 	);
 }

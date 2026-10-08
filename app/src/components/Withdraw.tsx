@@ -2,6 +2,7 @@ import { Bank } from "@phosphor-icons/react";
 import { useState } from "react";
 import { parseUnits } from "viem";
 import { usdFromBaseUnits } from "../lib/amount";
+import { Sheet } from "./Sheet";
 
 // No off-ramp ships. This screen exists so the demo can show the shape of a
 // cash-out and stop there: no contract behind it, no custodian, no bank. Every
@@ -10,7 +11,11 @@ import { usdFromBaseUnits } from "../lib/amount";
 
 type Stage = { kind: "form" } | { kind: "processing" } | { kind: "done" };
 
-export function Withdraw({ balance }: { balance: string }) {
+// The reference puts Withdraw beside Request as a tile. The tile opens a
+// bottom sheet with the same simulated flow; nothing about the demo changes,
+// only where it starts.
+export function WithdrawTile({ balance }: { balance: string }) {
+	const [open, setOpen] = useState(false);
 	const [amount, setAmount] = useState("");
 	const [stage, setStage] = useState<Stage>({ kind: "form" });
 	const [error, setError] = useState("");
@@ -43,10 +48,8 @@ export function Withdraw({ balance }: { balance: string }) {
 		await new Promise((resolve) => setTimeout(resolve, 900));
 		setStage({ kind: "done" });
 	}
-
-	return (
-		<section className="ppp-card">
-			<h2>Cash out</h2>
+	const form = (
+		<>
 			<p className="sim-badge" role="note">
 				Simulated. No real money moves.
 			</p>
@@ -97,15 +100,9 @@ export function Withdraw({ balance }: { balance: string }) {
 					)}
 				</div>
 			)}
-		</section>
+		</>
 	);
-}
 
-// The reference puts Withdraw beside Request as a tile, not a section. The
-// tile opens the same simulated flow below; the full form renders in place
-// once tapped so nothing about the demo changes, only where it starts.
-export function WithdrawTile({ balance }: { balance: string }) {
-	const [open, setOpen] = useState(false);
 	if (!open) {
 		return (
 			<button
@@ -127,5 +124,9 @@ export function WithdrawTile({ balance }: { balance: string }) {
 			</button>
 		);
 	}
-	return <Withdraw balance={balance} />;
+	return (
+		<Sheet title="Cash out" onClose={() => setOpen(false)}>
+			{form}
+		</Sheet>
+	);
 }
