@@ -18,10 +18,13 @@ RUN pnpm install --frozen-lockfile
 # ---- build ------------------------------------------------------------------
 FROM deps AS build
 COPY . .
-# Privy's app id is read at build time by Vite. The relayer key is NOT needed
-# here: it is read at runtime by the relayer process only.
+# Both VITE_ values are public by design and read at build time by Vite. The
+# relayer key is NOT needed here: it is read at runtime by the relayer process
+# only.
 ARG VITE_PRIVY_APP_ID
 ENV VITE_PRIVY_APP_ID=$VITE_PRIVY_APP_ID
+ARG VITE_RELAYER_URL
+ENV VITE_RELAYER_URL=$VITE_RELAYER_URL
 RUN pnpm build
 
 # ---- runtime ----------------------------------------------------------------
