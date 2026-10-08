@@ -1,7 +1,8 @@
-import { Bank } from "@phosphor-icons/react";
+import { ArrowLeft, Bank } from "@phosphor-icons/react";
 import { useState } from "react";
 import { parseUnits } from "viem";
 import { usdFromBaseUnits } from "../lib/amount";
+import { FormButton, FormField, FormInput } from "./FormControls";
 import { Sheet } from "./Sheet";
 
 // No off-ramp ships. This screen exists so the demo can show the shape of a
@@ -49,48 +50,69 @@ export function WithdrawTile({ balance }: { balance: string }) {
 		setStage({ kind: "done" });
 	}
 	const form = (
-		<>
-			<p className="sim-badge" role="note">
+		<div className="space-y-4">
+			<p className="inline-block rounded-full bg-[var(--teal-wash)] px-3 py-1.5 text-[11px] font-semibold tracking-wider text-[var(--teal-deep)] uppercase">
 				Simulated. No real money moves.
 			</p>
 			{stage.kind === "done" ? (
 				<div>
-					<p className="balance-sm">{usdFromBaseUnits(requested.toString())}</p>
-					<p className="muted">Requested to your bank account</p>
-					<p role="status" className="sim-note">
+					<p className="font-mono text-3xl font-bold text-[var(--ink)] tabular-nums">
+						{usdFromBaseUnits(requested.toString())}
+					</p>
+					<p className="mt-1 text-sm text-[var(--ink-soft)]">
+						Requested to your bank account
+					</p>
+					<p role="status" className="mt-3 text-sm text-[var(--ink-soft)]">
 						This is a demo. Nothing was sent to a bank and your balance is
 						unchanged.
 					</p>
-					<button
-						type="button"
-						className="ghost"
-						onClick={() => setStage({ kind: "form" })}
-					>
-						Back
-					</button>
+					<div className="pt-1">
+						<FormButton
+							onClick={() => setStage({ kind: "form" })}
+							icon={
+								<ArrowLeft
+									weight="bold"
+									aria-hidden="true"
+									className="size-4 text-white"
+								/>
+							}
+						>
+							Back
+						</FormButton>
+					</div>
 				</div>
 			) : (
-				<div>
-					<label className="ppp-field">
-						<span>Amount (USDC)</span>
-						<input
+				<div className="space-y-4">
+					<FormField label="Amount (USDC)">
+						<FormInput
 							inputMode="decimal"
 							placeholder="10.00"
 							value={amount}
 							onChange={(e) => setAmount(e.target.value)}
 							disabled={stage.kind === "processing"}
 						/>
-					</label>
-					<p className="muted">To: your bank account (not connected)</p>
-					<p className="muted">{`Available: ${usdFromBaseUnits(available.toString())}`}</p>
-					<button
-						type="button"
-						onClick={start}
-						disabled={stage.kind === "processing"}
-					>
-						{stage.kind === "processing" ? "Requesting…" : "Cash out"}
-					</button>
-					<p className="sim-note">
+					</FormField>
+					<div className="text-sm text-[var(--ink-soft)]">
+						<p>To: your bank account (not connected)</p>
+						<p className="mt-0.5">{`Available: ${usdFromBaseUnits(available.toString())}`}</p>
+					</div>
+					<div className="pt-1">
+						<FormButton
+							onClick={start}
+							disabled={stage.kind === "processing"}
+							busy={stage.kind === "processing"}
+							icon={
+								<Bank
+									weight="bold"
+									aria-hidden="true"
+									className="size-4 text-white"
+								/>
+							}
+						>
+							{stage.kind === "processing" ? "Requesting…" : "Cash out"}
+						</FormButton>
+					</div>
+					<p className="text-sm text-[var(--ink-soft)]">
 						Demo only. No bank is connected and no transfer is made.
 					</p>
 					{error && (
@@ -100,7 +122,7 @@ export function WithdrawTile({ balance }: { balance: string }) {
 					)}
 				</div>
 			)}
-		</>
+		</div>
 	);
 
 	if (!open) {

@@ -1,4 +1,4 @@
-import { ArrowUpRight } from "@phosphor-icons/react";
+import { ArrowUpRight, Copy, Link } from "@phosphor-icons/react";
 import { useWallets } from "@privy-io/react-auth";
 import { useState } from "react";
 import { createWalletClient, custom } from "viem";
@@ -8,6 +8,7 @@ import { parseAmount } from "../lib/amount";
 import { fileRequest } from "../lib/api";
 import { buildRequest, encodeLink, signRequest } from "../lib/request";
 import { USDC_TESTNET } from "../lib/wallet";
+import { FormButton, FormField, FormInput } from "./FormControls";
 import { Sheet } from "./Sheet";
 
 // The reference puts Request beside Withdraw as a tile. The tile opens a
@@ -127,43 +128,67 @@ export function CreateRequest({ recipient }: { recipient: `0x${string}` }) {
 	}
 
 	return (
-		<>
-			<h2>Request a payment</h2>
-			<label className="ppp-field">
-				<span>Your name</span>
-				<input
+		<div className="space-y-4">
+			<FormField label="Your name">
+				<FormInput
 					placeholder="Sarah"
 					value={requesterName}
 					onChange={(e) => setRequesterName(e.target.value)}
 				/>
-			</label>
-			<label className="ppp-field">
-				<span>Amount (USDC)</span>
-				<input
+			</FormField>
+			<FormField label="Amount (USDC)">
+				<FormInput
 					inputMode="decimal"
 					placeholder="25.00"
 					value={amount}
 					onChange={(e) => setAmount(e.target.value)}
 				/>
-			</label>
-			<label className="ppp-field">
-				<span>What&apos;s it for?</span>
-				<input
+			</FormField>
+			<FormField label="What's it for?">
+				<FormInput
 					placeholder="Logo design"
 					value={description}
 					onChange={(e) => setDescription(e.target.value)}
 				/>
-			</label>
-			<button type="button" onClick={create} disabled={busy || link !== ""}>
-				{busy ? "Creating…" : "Create link"}
-			</button>
+			</FormField>
+			<div className="pt-1">
+				<FormButton
+					onClick={create}
+					disabled={busy || link !== ""}
+					busy={busy}
+					icon={
+						<Link
+							weight="bold"
+							aria-hidden="true"
+							className="size-4 text-white"
+						/>
+					}
+				>
+					Create link
+				</FormButton>
+			</div>
 			{link && (
-				<div className="ppp-result">
-					<p className="muted">Send this link to your client:</p>
-					<code className="ppp-link">{link}</code>
-					<button type="button" className="ghost" onClick={copy}>
-						{copied ? "Copied" : "Copy link"}
-					</button>
+				<div className="rounded-[14px] bg-[var(--teal-wash)] p-4">
+					<p className="text-[13px] font-semibold text-[var(--ink)]">
+						Send this link to your client:
+					</p>
+					<code className="mt-2 block text-[13px] break-all text-[var(--ink)]">
+						{link}
+					</code>
+					<div className="mt-3">
+						<FormButton
+							onClick={copy}
+							icon={
+								<Copy
+									weight="bold"
+									aria-hidden="true"
+									className="size-4 text-white"
+								/>
+							}
+						>
+							{copied ? "Copied" : "Copy link"}
+						</FormButton>
+					</div>
 				</div>
 			)}
 			{error && (
@@ -171,6 +196,6 @@ export function CreateRequest({ recipient }: { recipient: `0x${string}` }) {
 					{error}
 				</p>
 			)}
-		</>
+		</div>
 	);
 }
