@@ -16,6 +16,87 @@ import { explorerTx } from "../lib/pay";
 // poll reads one RPC-sized chunk and nothing more.
 const POLL_MS = 4_000;
 
+function initialsOf(name: string): string {
+	const clean = name.trim();
+	if (!clean) return "··";
+	const parts = clean.split(/\s+/);
+	return (parts[0][0] + (parts[1]?.[0] ?? "")).toUpperCase();
+}
+
+// One request row, matching the reference: avatar chip with initials, title
+// plus date on the left, mono amount plus dot status on the right. Chain
+// receipts link out to the explorer; filed requests are history, not links.
+function RequestRow({
+	initials,
+	title,
+	date,
+	amount,
+	paid,
+	href,
+}: {
+	initials: string;
+	title: string;
+	date: Date;
+	amount: string;
+	paid: boolean;
+	href?: string;
+}) {
+	const body = (
+		<>
+			<span
+				aria-hidden="true"
+				className="flex size-11 shrink-0 items-center justify-center rounded-full bg-[var(--paper-deep)] text-[13px] font-bold text-[var(--ink-soft)]"
+			>
+				{initials}
+			</span>
+			<span className="min-w-0 flex-1">
+				<span className="block truncate text-[15px] font-bold text-[var(--ink)]">
+					{title}
+				</span>
+				<span className="mt-0.5 block text-[13px] text-[var(--ink-faint)]">
+					{date.toLocaleDateString("en-US", {
+						month: "short",
+						day: "numeric",
+						year: "numeric",
+					})}
+				</span>
+			</span>
+			<span className="shrink-0 text-right">
+				<span className="block font-mono text-[15px] font-semibold text-[var(--ink)] tabular-nums">
+					{amount}
+				</span>
+				<span
+					className={`mt-0.5 flex items-center justify-end gap-1 text-[11px] font-semibold tracking-wider uppercase ${
+						paid ? "text-[var(--green)]" : "text-[var(--amber)]"
+					}`}
+				>
+					<span
+						aria-hidden="true"
+						className={`size-1.5 rounded-full ${paid ? "bg-[var(--green)]" : "bg-[var(--amber)]"}`}
+					/>
+					{paid ? "Paid" : "Pending"}
+				</span>
+			</span>
+		</>
+	);
+	const cls =
+		"flex items-center gap-3 rounded-[14px] border border-[var(--line)] bg-[var(--card)] px-3.5 py-3";
+	return href ? (
+		<li>
+			<a
+				href={href}
+				target="_blank"
+				rel="noreferrer"
+				className={`${cls} transition-transform duration-150 ease-out active:scale-[0.99]`}
+			>
+				{body}
+			</a>
+		</li>
+	) : (
+		<li className={cls}>{body}</li>
+	);
+}
+
 export function ActivityList({ address }: { address: `0x${string}` }) {
 	const [entries, setEntries] = useState<ActivityEntry[]>(() =>
 		applyNotes(loadEntries()),
@@ -58,52 +139,46 @@ export function ActivityList({ address }: { address: `0x${string}` }) {
 	}, [address]);
 
 	return (
-		<section className="ppp-card">
-			<h2>Recent requests</h2>
+		<section aria-label="Recent requests" className="mt-6">
+			<div className="flex items-baseline justify-between">
+				<h2 className="font-[family-name:var(--font-display)] text-[22px] font-bold text-[var(--ink)]">
+					Recent requests
+				</h2>
+				{scanning && (
+					<p className="font-mono text-[11px] text-[var(--ink-faint)]">
+						live refresh · 1.5s
+					</p>
+				)}
+			</div>
 			{requests.length === 0 && entries.length === 0 ? (
-				<p className="muted">
+				<p className="mt-3 text-sm text-[var(--ink-soft)]">
 					Payments will appear here as clients pay your links. Nothing here yet.
 				</p>
 			) : (
-				<ul className="activity">
+				<ul className="mt-3 space-y-2.5">
 					{requests.map((r) => (
-						<li key={r.id}>
-							<p className="balance-sm">{usdFromBaseUnits(r.amount)}</p>
-							<p className="muted">
-								{r.description || "Payment request"}
-								{r.paid ? " · Paid" : " · Pending"}
-							</p>
-							<p className="muted">
-								{new Date(r.created_at).toLocaleString("en-US", {
-									dateStyle: "medium",
-									timeStyle: "short",
-								})}
-							</p>
-						</li>
+						<RequestRow
+							key={r.id}
+							initials={initialsOf(r.requester_name)}
+							title={r.description || "Payment request"}
+							date={new Date(r.created_at)}
+							amount={usdFromBaseUnits(r.amount)}
+							paid={r.paid}
+						/>
 					))}
 					{entries.map((entry) => (
-						<li key={entry.id}>
-							<p className="balance-sm">{usdFromBaseUnits(entry.amount)}</p>
-							<p className="muted">
-								{`From ${entry.counterparty.slice(0, 6)}…${entry.counterparty.slice(-4)}`}
-							</p>
-							{entry.description && (
-								<p className="muted">{`For: ${entry.description}`}</p>
-							)}
-							<p className="muted">
-								{new Date(entry.timestamp * 1000).toLocaleString("en-US", {
-									dateStyle: "medium",
-									timeStyle: "short",
-								})}
-							</p>
-							<a href={explorerTx(entry.hash)} target="_blank" rel="noreferrer">
-								View on MonadScan
-							</a>
-						</li>
+						<RequestRow
+							key={entry.id}
+							initials="··"
+							title={entry.description || "Payment received"}
+							date={new Date(entry.timestamp * 1000)}
+							amount={usdFromBaseUnits(entry.amount)}
+							paid
+							href={explorerTx(entry.hash)}
+						/>
 					))}
 				</ul>
 			)}
-			{scanning && <p className="muted">Checking for new payments…</p>}
 		</section>
 	);
 }
