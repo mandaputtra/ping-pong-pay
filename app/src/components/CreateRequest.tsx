@@ -1,3 +1,4 @@
+import { fileRequest } from "../lib/api";
 import { useWallets } from "@privy-io/react-auth";
 import { useState } from "react";
 import { createWalletClient, custom } from "viem";
@@ -7,8 +8,6 @@ import { parseAmount } from "../lib/amount";
 import { buildRequest, encodeLink, signRequest } from "../lib/request";
 import { USDC_TESTNET } from "../lib/wallet";
 
-// The description is a note to the payer, so it rides in the URL unsigned rather
-// than inside the signed data. The pay screen labels it as such.
 export function CreateRequest({ recipient }: { recipient: `0x${string}` }) {
 	const { wallets } = useWallets();
 	const [amount, setAmount] = useState("");
@@ -56,7 +55,26 @@ export function CreateRequest({ recipient }: { recipient: `0x${string}` }) {
 			// The description is unsigned prose that never reaches the chain. Saving
 			// it here is what lets the recipient's browser label the payment later.
 			saveNote(request.amount, recipient, request.description);
-			setLink(encodeLink(request, signature, window.location.origin));
+			// File the same signed blob under a short ULID so the shared link is
+			// readable. Best-effort: if the database is unreachable the long
+			// self-describing link below still works, so link creation never
+			// depends on the server.
+			const filed = await fileRequest({
+				requesterAddress: recipient,
+				recipient: request.recipient,
+				token: request.token,
+				amount: request.amount,
+				nonce: request.nonce,
+				expiry: request.expiry,
+				signature,
+				description: request.description,
+				requesterName: request.requesterName,
+			});
+			setLink(
+				filed
+					? `${window.location.origin}/pay/${filed.id}`
+					: encodeLink(request, signature, window.location.origin),
+			);
 		} catch {
 			setError("Couldn't create the link. Try again.");
 		} finally {

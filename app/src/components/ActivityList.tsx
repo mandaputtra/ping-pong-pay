@@ -8,6 +8,7 @@ import {
 	scanIncoming,
 } from "../lib/activity";
 import { usdFromBaseUnits } from "../lib/amount";
+import { type ApiRequest, fetchHistory } from "../lib/api";
 import { explorerTx } from "../lib/pay";
 
 // Monad blocks are sub-second, so a short poll is cheap and keeps the list live
@@ -19,10 +20,17 @@ export function ActivityList({ address }: { address: `0x${string}` }) {
 	const [entries, setEntries] = useState<ActivityEntry[]>(() =>
 		applyNotes(loadEntries()),
 	);
+	const [requests, setRequests] = useState<ApiRequest[]>([]);
 	const [scanning, setScanning] = useState(false);
 
 	useEffect(() => {
 		let cancelled = false;
+		// The database is the requester's own history: every link they minted
+		// and whether it is paid. The chain scan below is what they received.
+		// Either source failing leaves the other on screen.
+		fetchHistory(address).then((found) => {
+			if (!cancelled && found) setRequests(found.requests);
+		});
 		let timer: ReturnType<typeof setTimeout>;
 
 		async function tick() {
@@ -51,13 +59,28 @@ export function ActivityList({ address }: { address: `0x${string}` }) {
 
 	return (
 		<section className="ppp-card">
-			<h2>Payments received</h2>
-			{entries.length === 0 ? (
+			<h2>Recent requests</h2>
+			{requests.length === 0 && entries.length === 0 ? (
 				<p className="muted">
 					Payments will appear here as clients pay your links. Nothing here yet.
 				</p>
 			) : (
 				<ul className="activity">
+					{requests.map((r) => (
+						<li key={r.id}>
+							<p className="balance-sm">{usdFromBaseUnits(r.amount)}</p>
+							<p className="muted">
+								{r.description || "Payment request"}
+								{r.paid ? " · Paid" : " · Pending"}
+							</p>
+							<p className="muted">
+								{new Date(r.created_at).toLocaleString("en-US", {
+									dateStyle: "medium",
+									timeStyle: "short",
+								})}
+							</p>
+						</li>
+					))}
 					{entries.map((entry) => (
 						<li key={entry.id}>
 							<p className="balance-sm">{usdFromBaseUnits(entry.amount)}</p>

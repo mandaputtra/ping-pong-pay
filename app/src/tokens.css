@@ -1,7 +1,7 @@
 /* Design tokens. Motion durations follow Material 3 scale; every transition is
    transform/opacity only so nothing reflows. See docs/demo-ux.md. */
 :root {
-	color-scheme: light dark;
+	color-scheme: light;
 
 	--space-1: 0.25rem;
 	--space-2: 0.5rem;
@@ -17,39 +17,29 @@
 	--radius-btn: 14px;
 	--radius-full: 999px;
 
-	--surface: light-dark(#ffffff, #14161a);
-	--surface-raised: light-dark(#f6f7f9, #1c1f25);
-	--text: light-dark(#14161a, #f2f4f7);
-	--text-muted: light-dark(#5b6472, #9aa4b2);
-	--accent: light-dark(#1a4cff, #6f8bff);
-	/* White ink is 3.08:1 on the dark-mode violet, failing AA; dark ink is
-	   6.2:1. Light-mode violet is dark enough for white. */
-	--text-on-accent: light-dark(#ffffff, #0b0f19);
-	--danger: light-dark(#b3261e, #ffb4ab);
-	--success: light-dark(#047857, #34d399);
-	--surface-card: light-dark(#fbfcfd, #111827);
+	--surface: #ffffff;
+	--surface-raised: #f6f7f9;
+	--text: #24333d;
+	--text-muted: #5d6f79;
+	--accent: #3c726b;
+	--text-on-accent: #ffffff;
+	--danger: #b3261e;
+	--success: #2f7d4f;
+	--surface-card: #ffffff;
 
-	/* Payment-screen tokens, mapped from the pen.dev design. --surface-card,
-	   --text, --accent and --success already carried these exact dark values, so
-	   only the ones with no equivalent are new. Light values are the same hues
-	   held to a legible contrast; dark is the designed value. */
-	--pay-bg: light-dark(#f4f7f8, #0b0f19);
-	--surface-elevated: light-dark(#ffffff, #1a2332);
-	--line-card: light-dark(#d8e0e4, #1f2937);
-	--text-subtle: light-dark(#5c6672, #6b7280);
-	--accent-teal: light-dark(#0f7c74, #56c6be);
-	--accent-teal-dim: light-dark(
-		rgba(15, 124, 116, 0.09),
-		rgba(86, 198, 190, 0.2)
-	);
+	/* Light-only: every payment token resolves to its light value. The dark
+	   branches are gone with the dark theme. */
+	--pay-bg: #f9f6f1;
+	--surface-elevated: #f1ebe1;
+	--line-card: rgba(36, 51, 61, 0.12);
+	--text-subtle: #8ba0aa;
+	--accent-teal: #3c726b;
+	--accent-teal-dim: rgba(60, 114, 107, 0.1);
 
-	/* The pen's background wash: one soft accent glow behind the card, kept low
-	   enough to read as depth rather than as a second accent. */
-	--pay-glow: light-dark(rgba(111, 139, 255, 0.14), rgba(111, 139, 255, 0.08));
-	--pay-glow-teal: light-dark(
-		rgba(86, 198, 190, 0.14),
-		rgba(86, 198, 190, 0.06)
-	);
+	/* One soft accent glow behind the card, kept low enough to read as depth
+	   rather than as a second accent. */
+	--pay-glow: rgba(60, 114, 107, 0.12);
+	--pay-glow-teal: rgba(60, 114, 107, 0.1);
 
 	/* M3 duration tokens */
 	--motion-short: 150ms;

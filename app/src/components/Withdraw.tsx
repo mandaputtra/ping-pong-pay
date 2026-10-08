@@ -1,3 +1,4 @@
+import { Bank } from "@phosphor-icons/react";
 import { useState } from "react";
 import { parseUnits } from "viem";
 import { usdFromBaseUnits } from "../lib/amount";
@@ -98,4 +99,33 @@ export function Withdraw({ balance }: { balance: string }) {
 			)}
 		</section>
 	);
+}
+
+// The reference puts Withdraw beside Request as a tile, not a section. The
+// tile opens the same simulated flow below; the full form renders in place
+// once tapped so nothing about the demo changes, only where it starts.
+export function WithdrawTile({ balance }: { balance: string }) {
+	const [open, setOpen] = useState(false);
+	if (!open) {
+		return (
+			<button
+				type="button"
+				onClick={() => setOpen(true)}
+				className="rounded-[18px] border border-[var(--line)] bg-[var(--card)] p-4 text-left transition-transform duration-150 ease-out active:scale-[0.98]"
+			>
+				<Bank
+					weight="bold"
+					aria-hidden="true"
+					className="size-5 text-[var(--teal)]"
+				/>
+				<span className="mt-2 block text-[15px] font-bold text-[var(--ink)]">
+					Withdraw balance
+				</span>
+				<span className="mt-1 block text-[13px] leading-snug text-[var(--ink-soft)]">
+					Record a simulated bank transfer.
+				</span>
+			</button>
+		);
+	}
+	return <Withdraw balance={balance} />;
 }

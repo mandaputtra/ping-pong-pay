@@ -17,7 +17,9 @@ interface MyRouterContext {
 	queryClient: QueryClient;
 }
 
-const THEME_INIT_SCRIPT = `(function(){try{var stored=window.localStorage.getItem('theme');var mode=(stored==='light'||stored==='dark'||stored==='auto')?stored:'auto';var prefersDark=window.matchMedia('(prefers-color-scheme: dark)').matches;var resolved=mode==='auto'?(prefersDark?'dark':'light'):mode;var root=document.documentElement;root.classList.remove('light','dark');root.classList.add(resolved);if(mode==='auto'){root.removeAttribute('data-theme')}else{root.setAttribute('data-theme',mode)}root.style.colorScheme=resolved;}catch(e){}})();`;
+// Light-only. The old script resolved light/dark/auto from storage and the OS;
+// now it pins light and clears any stored preference left behind.
+const THEME_INIT_SCRIPT = `(function(){try{window.localStorage.removeItem('theme');var root=document.documentElement;root.classList.remove('light','dark');root.classList.add('light');root.removeAttribute('data-theme');root.style.colorScheme='light';}catch(e){}})();`;
 
 // Socials, email, and passkey must also be enabled in the Privy dashboard;
 // this list only subsets what the dashboard allows. An embedded wallet is

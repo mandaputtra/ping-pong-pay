@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { createWalletClient, custom } from "viem";
 import { monadTestnet } from "viem/chains";
 import { usdFromBaseUnits } from "../lib/amount";
+import { fetchRequest, markPaid } from "../lib/api";
 import {
 	isExpired,
 	markNonceUsed,
@@ -20,7 +21,7 @@ import {
 } from "../lib/pay";
 import { loadReceipt, saveReceipt } from "../lib/receipt";
 import type { DecodedRequest } from "../lib/request";
-import { decodeLink, verifyRequest } from "../lib/request";
+import { decodeLink, encodeSignedBlob, verifyRequest } from "../lib/request";
 import { StatusSwap } from "./StatusSwap";
 
 // Verifying before deciding, then one explicit Pay. Every refusal happens before
@@ -29,7 +30,12 @@ import { StatusSwap } from "./StatusSwap";
 type Stage =
 	| { kind: "checking" }
 	| { kind: "refused"; reason: RefusalKind }
-	| { kind: "ready"; request: DecodedRequest; alreadyPaid: boolean }
+	| {
+			kind: "ready";
+			request: DecodedRequest;
+			alreadyPaid: boolean;
+			rowId: string | null;
+	  }
 	| { kind: "submitting" }
 	| { kind: "confirming"; hash: `0x${string}` }
 	| { kind: "paid"; receipt: Receipt }
@@ -46,14 +52,13 @@ const SHELL = "w-full px-4 pt-6 pb-2";
 // Bottom padding is a step larger than the top. The CTA is the last element in
 // the card and symmetric padding reads as cramped under it.
 const CARD =
-	"rounded-[20px] border border-[var(--line-card)] bg-[var(--surface-card)] px-6 pt-6 pb-8 text-center shadow-[0_18px_44px_rgb(2_6_23/0.28)] sm:px-8 sm:pt-8 sm:pb-10";
-// Dark ink on the accent fills. White on the violet is 3.08:1 and on the teal
-// 2.05:1; both fail WCAG AA for 17px text. Dark ink passes at 6.2:1 and 9.3:1
-// and is what every real fintech CTA does on a saturated fill.
+	"rounded-[20px] border border-[var(--line-card)] bg-[var(--surface-card)] px-6 pt-6 pb-8 text-center shadow-[0_18px_40px_rgb(36_51_61/0.10)] sm:px-8 sm:pt-8 sm:pb-10";
+// Both fills take the shared on-accent ink. White on the light teal is 5.3:1
+// and on the light violet higher; no per-fill ink needed in light-only.
 const CTA = (fill: "violet" | "teal") =>
 	`flex min-h-[52px] w-full items-center justify-center rounded-[14px] text-[17px] font-semibold transition-[background-color,transform] duration-150 ease-out active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60 ${
 		fill === "teal"
-			? "bg-[var(--accent-teal)] text-[#04201e]"
+			? "bg-[var(--accent-teal)] text-[var(--text-on-accent)]"
 			: "bg-[var(--accent)] text-[var(--text-on-accent)]"
 	}`;
 
@@ -77,12 +82,29 @@ export function PayRequest({
 
 	useEffect(() => {
 		let cancelled = false;
-		const decoded = decodeLink(slug);
-		if (!decoded) {
-			setStage({ kind: "refused", reason: "unreadable" });
-			return;
-		}
+		// A short ULID slug resolves to the requester's signed blob, which then
+		// goes through the same decode + verify path as a self-describing
+		// link. Old long links skip the lookup and decode directly, so nothing
+		// already shared breaks.
 		(async () => {
+			let blob = slug;
+			let rowId: string | null = null;
+			if (/^[0-9A-Z]{26}$/.test(slug)) {
+				const found = await fetchRequest(slug);
+				if (found) {
+					const r = found.request;
+					blob = encodeSignedBlob({
+						...r,
+						signature: r.signature as `0x${string}`,
+					});
+					rowId = r.id;
+				}
+			}
+			const decoded = decodeLink(blob);
+			if (!decoded) {
+				if (!cancelled) setStage({ kind: "refused", reason: "unreadable" });
+				return;
+			}
 			// Gate order matters: the signature decides whether the terms are real,
 			// then expiry decides whether they are still payable, then the ledger and
 			// the chain decide whether this payer already did it.
@@ -95,7 +117,12 @@ export function PayRequest({
 				return;
 			}
 			if (!cancelled) {
-				setStage({ kind: "ready", request: decoded, alreadyPaid: false });
+				setStage({
+					kind: "ready",
+					request: decoded,
+					alreadyPaid: false,
+					rowId,
+				});
 			}
 		})();
 		return () => {
@@ -116,7 +143,12 @@ export function PayRequest({
 			return;
 		}
 		if (usedNonces().has(stage.request.nonce)) {
-			setStage({ kind: "ready", request: stage.request, alreadyPaid: true });
+			setStage({
+				kind: "ready",
+				request: stage.request,
+				alreadyPaid: true,
+				rowId: stage.rowId,
+			});
 			return;
 		}
 		const wallet = wallets?.[0];
@@ -129,6 +161,7 @@ export function PayRequest({
 						kind: "ready",
 						request: stage.request,
 						alreadyPaid: true,
+						rowId: stage.rowId,
 					});
 				}
 			},
@@ -141,7 +174,7 @@ export function PayRequest({
 		};
 	}, [stage, wallets]);
 
-	async function pay(request: DecodedRequest) {
+	async function pay(request: DecodedRequest, rowId: string | null) {
 		const wallet = wallets?.[0];
 		if (!wallet) {
 			setStage({ kind: "needsWallet" });
@@ -163,6 +196,10 @@ export function PayRequest({
 			// even before the chain scan catches up.
 			markNonceUsed(request.nonce);
 			saveReceipt(request.nonce, receipt);
+			// Best-effort: the row's paid flag is history, not a payment guard.
+			// The browser's nonce ledger and the chain scan above are what stop a
+			// second charge, so a failed marking must never surface as an error.
+			if (rowId) markPaid(rowId, receipt.hash).catch(() => {});
 			setStage({ kind: "paid", receipt });
 		} catch {
 			setStage({
@@ -299,7 +336,7 @@ export function PayRequest({
 					<button
 						type="button"
 						className={`${CTA("violet")} mt-6`}
-						onClick={() => pay(stage.request)}
+						onClick={() => pay(stage.request, null)}
 					>
 						Try again
 					</button>
@@ -308,7 +345,7 @@ export function PayRequest({
 		);
 	}
 
-	const { request, alreadyPaid } = stage;
+	const { request, alreadyPaid, rowId } = stage;
 	const who = requesterName || "this freelancer";
 	const amount = usdFromBaseUnits(request.amount);
 	// The pen flips the CTA colour once the payer is signed in: violet while there
@@ -358,7 +395,7 @@ export function PayRequest({
 					<button
 						type="button"
 						className={`${CTA("teal")} mt-6`}
-						onClick={() => pay(request)}
+						onClick={() => pay(request, rowId)}
 					>
 						{`Pay ${amount}`}
 					</button>

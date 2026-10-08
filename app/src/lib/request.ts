@@ -123,19 +123,34 @@ export async function verifyRequest(
 // screen decodes it and verifies the signature over the decoded fields, so a
 // hand-edited link fails verification instead of redirecting the payment.
 
+// The signed blob on its own: the ABI-encoded payment terms plus signature,
+// without origin or display query. Both the long self-describing link and the
+// DB-backed short link resolve to exactly this blob before verification, so
+// one encoder feeds both transports and decodeLink stays the single decoder.
+export function encodeSignedBlob(r: {
+	recipient: string;
+	token: string;
+	amount: string;
+	nonce: string;
+	expiry: string;
+	signature: Hex;
+}): string {
+	return encodeAbiParameters(linkParams, [
+		r.recipient as `0x${string}`,
+		r.token as `0x${string}`,
+		BigInt(r.amount),
+		BigInt(r.nonce),
+		BigInt(r.expiry),
+		r.signature,
+	]).slice(2);
+}
+
 export function encodeLink(
 	r: PaymentRequest,
 	signature: Hex,
 	origin: string,
 ): string {
-	const encoded = encodeAbiParameters(linkParams, [
-		r.recipient,
-		r.token,
-		BigInt(r.amount),
-		BigInt(r.nonce),
-		BigInt(r.expiry),
-		signature,
-	]);
+	const encoded = encodeSignedBlob({ ...r, signature });
 	// The description and the requester's name are display-only, not payment
 	// terms, so they travel unsigned as query params. verifyRequest ignores both;
 	// the pay screen shows them as the requester's own words. The amount,
@@ -144,7 +159,7 @@ export function encodeLink(
 	if (r.description) params.set("d", r.description);
 	if (r.requesterName) params.set("from", r.requesterName);
 	const query = params.toString();
-	return `${origin}/pay/${encoded.slice(2)}${query ? `?${query}` : ""}`;
+	return `${origin}/pay/${encoded}${query ? `?${query}` : ""}`;
 }
 
 export type DecodedRequest = PaymentRequest & { signature: Hex };
