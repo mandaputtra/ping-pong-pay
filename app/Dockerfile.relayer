@@ -25,6 +25,7 @@ COPY src/relayer-server.ts ./relayer-server.ts
 COPY src/lib/address.ts ./lib/address.ts
 COPY src/lib/relayer.ts ./lib/relayer.ts
 COPY src/lib/cap.ts ./lib/cap.ts
+COPY src/lib/db.ts ./lib/db.ts
 
 # Non-root: this process holds the hot wallet key and has no reason to be root.
 # Type stripping needs no build and no toolchain in the image.
