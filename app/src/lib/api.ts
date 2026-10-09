@@ -112,15 +112,30 @@ export function markPaid(
 // Card leg (ADR-0002). Two calls: open a checkout for a request row, then
 // settle it. The relayer owns both the session and the float, so the browser
 // never names a recipient or trusts itself about having paid.
+//
+// These throw with the server's own error code rather than returning null like
+// the calls above. "out of stock" and "already paid" need different words on
+// screen, and a null would flatten both into one wrong sentence.
+async function postOrThrow<T>(path: string, body: unknown): Promise<T> {
+	const res = await fetch(`${API}${path}`, {
+		method: "POST",
+		headers: { "content-type": "application/json" },
+		body: JSON.stringify(body),
+	});
+	const parsed = (await res.json().catch(() => ({}))) as { error?: string };
+	if (!res.ok) throw new Error(parsed.error ?? "REQUEST_FAILED");
+	return parsed as T;
+}
+
 export function startCardCheckout(requestId: string): Promise<{
 	session: { id: string; amount: string };
 	sandbox: boolean;
-} | null> {
-	return post("/api/fiat/checkout", { requestId });
+}> {
+	return postOrThrow("/api/fiat/checkout", { requestId });
 }
 
 export function settleCardCheckout(
 	sessionId: string,
-): Promise<{ hash: string } | null> {
-	return post("/api/fiat/settle", { sessionId });
+): Promise<{ hash: string }> {
+	return postOrThrow("/api/fiat/settle", { sessionId });
 }

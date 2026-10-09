@@ -29,6 +29,10 @@ export function friendlyError(err: unknown): string {
 		return "You've already added money three times. That's plenty for now.";
 	if (/out of stock/i.test(message))
 		return "We're out of demo money right now. Try again in a bit.";
+	if (/already paid/i.test(message))
+		return "This request has already been paid.";
+	if (/no session|checkout failed/i.test(message))
+		return "That checkout expired. Start again.";
 	if (/fetch failed|network|ECONN|CORS/i.test(message))
 		return "Couldn't reach us. Check your connection and try again.";
 	return "That didn't go through. Try again.";

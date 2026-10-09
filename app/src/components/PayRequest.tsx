@@ -32,6 +32,7 @@ import {
 import { loadReceipt, saveReceipt } from "../lib/receipt";
 import type { DecodedRequest } from "../lib/request";
 import { decodeLink, encodeSignedBlob, verifyRequest } from "../lib/request";
+import { friendlyError } from "../lib/topup";
 import { Sheet } from "./Sheet";
 import { StatusSwap } from "./StatusSwap";
 
@@ -251,8 +252,8 @@ export function PayRequest({
 			saveReceipt(request.nonce, receipt);
 			setCardOpen(false);
 			setStage({ kind: "paid", receipt });
-		} catch {
-			setCardError("That card payment didn't go through. Try again.");
+		} catch (err) {
+			setCardError(friendlyError(err));
 		} finally {
 			setCardBusy(false);
 		}
@@ -467,7 +468,7 @@ export function PayRequest({
 							Sandbox. No real money moves.
 						</p>
 						<p className="text-sm text-[var(--ink-soft)]">
-							{`Paying ${amount} to ${who}. The card form stands in for a real processor (see ADR-0002); the USDC payout to them is real on testnet.`}
+							{`Paying ${who} ${amount}.`}
 						</p>
 						<button
 							type="button"
