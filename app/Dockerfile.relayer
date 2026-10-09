@@ -22,10 +22,11 @@ ENV NODE_ENV=production
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/package.json ./package.json
 COPY src/relayer-server.ts ./relayer-server.ts
-COPY src/lib/address.ts ./lib/address.ts
-COPY src/lib/relayer.ts ./lib/relayer.ts
-COPY src/lib/cap.ts ./lib/cap.ts
-COPY src/lib/db.ts ./lib/db.ts
+# The whole lib dir, not an enumerated list. Enumerating broke the image twice
+# (db.ts, then fiat.ts): every new lib file silently became a missing module at
+# boot. src/ is a few KB of TypeScript; node_modules is what makes this image
+# 225MB, so copying it whole costs nothing and removes the failure mode.
+COPY src/lib ./lib
 
 # Non-root: this process holds the hot wallet key and has no reason to be root.
 # Type stripping needs no build and no toolchain in the image.
