@@ -55,7 +55,9 @@ export type ApiRequest = {
 	created_at: string;
 };
 
-export function fetchUser(address: string): Promise<{ user: ApiUser | null } | null> {
+export function fetchUser(
+	address: string,
+): Promise<{ user: ApiUser | null } | null> {
 	return get(`/api/me?address=${address}`);
 }
 
@@ -88,7 +90,9 @@ export function fileRequest(row: {
 	return post("/api/requests", row);
 }
 
-export function fetchRequest(id: string): Promise<{ request: ApiRequest } | null> {
+export function fetchRequest(
+	id: string,
+): Promise<{ request: ApiRequest } | null> {
 	return get(`/api/requests/${id}`);
 }
 
@@ -98,6 +102,25 @@ export function fetchHistory(
 	return get(`/api/requests?requester=${requester}`);
 }
 
-export function markPaid(id: string, hash: string): Promise<{ ok: true } | null> {
+export function markPaid(
+	id: string,
+	hash: string,
+): Promise<{ ok: true } | null> {
 	return post(`/api/requests/${id}/paid`, { hash });
+}
+
+// Card leg (ADR-0002). Two calls: open a checkout for a request row, then
+// settle it. The relayer owns both the session and the float, so the browser
+// never names a recipient or trusts itself about having paid.
+export function startCardCheckout(requestId: string): Promise<{
+	session: { id: string; amount: string };
+	sandbox: boolean;
+} | null> {
+	return post("/api/fiat/checkout", { requestId });
+}
+
+export function settleCardCheckout(
+	sessionId: string,
+): Promise<{ hash: string } | null> {
+	return post("/api/fiat/settle", { sessionId });
 }

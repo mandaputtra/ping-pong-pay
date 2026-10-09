@@ -48,3 +48,23 @@ export async function topUp(address: Address): Promise<Hex> {
 		throw err;
 	}
 }
+
+// Pays a card checkout from the float (ADR-0002). Unlike topUp there is no
+// per-address ledger here: the amount comes from a stored request row and the
+// caller can only ever name that row, so the row is the bound.
+export async function payout(to: Address, amount: bigint): Promise<Hex> {
+	const client = createWalletClient({
+		account: relayerAccount(),
+		chain: monadTestnet,
+		transport: http(),
+	});
+	const hash = await client.writeContract({
+		address: USDC_TESTNET,
+		abi: ERC20_ABI,
+		functionName: "transfer",
+		args: [to, amount],
+		gas: TRANSFER_GAS,
+	});
+	await publicClient.waitForTransactionReceipt({ hash });
+	return hash;
+}

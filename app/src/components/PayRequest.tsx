@@ -1,10 +1,20 @@
-import { CalendarBlank, Lock, ShieldCheck } from "@phosphor-icons/react";
+import {
+	CalendarBlank,
+	CreditCard,
+	Lock,
+	ShieldCheck,
+} from "@phosphor-icons/react";
 import { useLogin, usePrivy, useWallets } from "@privy-io/react-auth";
 import { useEffect, useState } from "react";
 import { createWalletClient, custom } from "viem";
 import { monadTestnet } from "viem/chains";
 import { usdFromBaseUnits } from "../lib/amount";
-import { fetchRequest, markPaid } from "../lib/api";
+import {
+	fetchRequest,
+	markPaid,
+	settleCardCheckout,
+	startCardCheckout,
+} from "../lib/api";
 import {
 	isExpired,
 	markNonceUsed,
@@ -22,6 +32,7 @@ import {
 import { loadReceipt, saveReceipt } from "../lib/receipt";
 import type { DecodedRequest } from "../lib/request";
 import { decodeLink, encodeSignedBlob, verifyRequest } from "../lib/request";
+import { Sheet } from "./Sheet";
 import { StatusSwap } from "./StatusSwap";
 
 // Verifying before deciding, then one explicit Pay. Every refusal happens before
@@ -79,6 +90,11 @@ export function PayRequest({
 	const { login } = useLogin();
 	const { wallets } = useWallets();
 	const [stage, setStage] = useState<Stage>({ kind: "checking" });
+	// Card leg (ADR-0002). Kept separate from `stage` because it can run while
+	// signed out: a card payer never gets a wallet at all.
+	const [cardOpen, setCardOpen] = useState(false);
+	const [cardBusy, setCardBusy] = useState(false);
+	const [cardError, setCardError] = useState("");
 
 	useEffect(() => {
 		let cancelled = false;
@@ -207,6 +223,38 @@ export function PayRequest({
 				reason: "That didn't go through. Your money hasn't moved. Try again.",
 				request,
 			});
+		}
+	}
+
+	// Card leg (ADR-0002): open a checkout for this request row, then settle it.
+	// The relayer pays the freelancer from its float, so the payer needs no
+	// wallet and no gas. Only links filed under a ULID have a row to settle.
+	async function payWithCard(request: DecodedRequest, rowId: string | null) {
+		if (!rowId) {
+			setCardError("This link predates card checkout. Use a wallet instead.");
+			return;
+		}
+		setCardError("");
+		setCardBusy(true);
+		try {
+			const opened = await startCardCheckout(rowId);
+			if (!opened) throw new Error("checkout failed");
+			const settled = await settleCardCheckout(opened.session.id);
+			if (!settled) throw new Error("settle failed");
+			markNonceUsed(request.nonce);
+			const receipt: Receipt = {
+				hash: settled.hash as `0x${string}`,
+				amount: request.amount,
+				recipient: request.recipient,
+				paidAt: Math.floor(Date.now() / 1000),
+			};
+			saveReceipt(request.nonce, receipt);
+			setCardOpen(false);
+			setStage({ kind: "paid", receipt });
+		} catch {
+			setCardError("That card payment didn't go through. Try again.");
+		} finally {
+			setCardBusy(false);
 		}
 	}
 
@@ -391,24 +439,53 @@ export function PayRequest({
 					<button type="button" disabled className={`${CTA("teal")} mt-6`}>
 						You already paid this
 					</button>
-				) : signedIn ? (
-					<button
-						type="button"
-						className={`${CTA("teal")} mt-6`}
-						onClick={() => pay(request, rowId)}
-					>
-						{`Pay ${amount}`}
-					</button>
 				) : (
-					<button
-						type="button"
-						className={`${CTA("violet")} mt-6`}
-						onClick={login}
-					>
-						Get started
-					</button>
+					<>
+						<button
+							type="button"
+							className={`${CTA("teal")} mt-6 gap-2`}
+							onClick={() => setCardOpen(true)}
+							disabled={!rowId}
+						>
+							<CreditCard weight="bold" aria-hidden="true" className="size-4" />
+							{`Pay ${amount} by card`}
+						</button>
+						<button
+							type="button"
+							className={`${CTA("violet")} mt-2`}
+							onClick={signedIn ? () => pay(request, rowId) : login}
+						>
+							{signedIn ? "Pay from wallet" : "Sign in to pay from wallet"}
+						</button>
+					</>
 				)}
 			</div>
+			{cardOpen && (
+				<Sheet title="Pay by card" onClose={() => setCardOpen(false)}>
+					<div className="space-y-4">
+						<p className="inline-block rounded-full bg-[var(--teal-wash)] px-3 py-1.5 text-[11px] font-semibold tracking-wider text-[var(--teal-deep)] uppercase">
+							Sandbox. No real money moves.
+						</p>
+						<p className="text-sm text-[var(--ink-soft)]">
+							{`Paying ${amount} to ${who}. The card form stands in for a real processor (see ADR-0002); the USDC payout to them is real on testnet.`}
+						</p>
+						<button
+							type="button"
+							className={`${CTA("teal")} gap-2`}
+							onClick={() => payWithCard(request, rowId)}
+							disabled={cardBusy}
+						>
+							<CreditCard weight="bold" aria-hidden="true" className="size-4" />
+							{cardBusy ? "Processing…" : `Pay ${amount}`}
+						</button>
+						{cardError && (
+							<p role="alert" className="error">
+								{cardError}
+							</p>
+						)}
+					</div>
+				</Sheet>
+			)}
 		</main>
 	);
 }

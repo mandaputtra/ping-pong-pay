@@ -14,7 +14,8 @@ import {
 	setShortName,
 	upsertUser,
 } from "./lib/db.ts";
-import { TOPUP_AMOUNT, relayerAccount, topUp } from "./lib/relayer.ts";
+import { fiatSession, markSessionPaid, sandboxProvider } from "./lib/fiat.ts";
+import { payout, relayerAccount, TOPUP_AMOUNT, topUp } from "./lib/relayer.ts";
 
 // RELAYER_PORT, not PORT: on Fly both processes share one container and PORT is
 // already taken by the app. Falling back to PORT would crash on EADDRINUSE.
@@ -55,9 +56,7 @@ const server = createServer(async (req, res) => {
 		return reply(res, 200, { ok: true, amount: TOPUP_AMOUNT.toString() });
 	}
 
-	if (req.method !== "POST" || req.url !== "/topup")
-		return api(req, res);
-
+	if (req.method !== "POST" || req.url !== "/topup") return api(req, res);
 
 	let raw = "";
 	for await (const chunk of req) raw += chunk;
@@ -82,7 +81,9 @@ const server = createServer(async (req, res) => {
 });
 
 server.listen(PORT, () => console.log(`relayer listening on :${PORT}`));
-async function readJson(req: IncomingMessage): Promise<Record<string, unknown>> {
+async function readJson(
+	req: IncomingMessage,
+): Promise<Record<string, unknown>> {
 	let raw = "";
 	for await (const chunk of req) raw += chunk;
 	try {
@@ -100,10 +101,7 @@ async function readJson(req: IncomingMessage): Promise<Record<string, unknown>> 
 // names sticky, and history real. Without DATABASE_URL every route answers
 // 503 and the client keeps its localStorage behaviour, so local dev without a
 // database is unaffected.
-async function api(
-	req: IncomingMessage,
-	res: ServerResponse,
-): Promise<void> {
+async function api(req: IncomingMessage, res: ServerResponse): Promise<void> {
 	const url = new URL(req.url ?? "/", "http://localhost");
 	if (!db()) return reply(res, 503, { error: "no database" });
 
@@ -117,9 +115,12 @@ async function api(
 		const body = await readJson(req);
 		const address = typeof body.address === "string" ? body.address : "";
 		if (!isAddress(address)) return reply(res, 400, { error: "bad address" });
-		const email = typeof body.email === "string" ? body.email.slice(0, 160) : "";
+		const email =
+			typeof body.email === "string" ? body.email.slice(0, 160) : "";
 		const shortName =
-			typeof body.shortName === "string" ? body.shortName.trim().slice(0, 40) : "";
+			typeof body.shortName === "string"
+				? body.shortName.trim().slice(0, 40)
+				: "";
 		if (!shortName) return reply(res, 400, { error: "name required" });
 		return reply(res, 200, {
 			user: await upsertUser(address as Address, email, shortName),
@@ -183,12 +184,61 @@ async function api(
 		const body = await readJson(req);
 		const address = typeof body.address === "string" ? body.address : "";
 		const shortName =
-			typeof body.shortName === "string" ? body.shortName.trim().slice(0, 40) : "";
+			typeof body.shortName === "string"
+				? body.shortName.trim().slice(0, 40)
+				: "";
 		if (!isAddress(address) || !shortName)
 			return reply(res, 400, { error: "bad name" });
 		return reply(res, 200, {
 			user: await setShortName(address as Address, shortName),
 		});
+	}
+
+	// Card leg (ADR-0002). checkout opens a session for a real request row;
+	// settle pays that row's own recipient and amount from the float. The
+	// caller never names a recipient, so the float cannot be drained elsewhere.
+	if (req.method === "POST" && url.pathname === "/api/fiat/checkout") {
+		const body = await readJson(req);
+		const requestId = typeof body.requestId === "string" ? body.requestId : "";
+		if (!/^[0-9A-Z]{26}$/.test(requestId))
+			return reply(res, 400, { error: "bad id" });
+		const row = await getRequest(requestId);
+		if (!row) return reply(res, 404, { error: "not found" });
+		if (row.paid) return reply(res, 409, { error: "already paid" });
+		const session = await sandboxProvider.start({
+			requestId,
+			amountBaseUnits: row.amount,
+		});
+		return reply(res, 200, {
+			session: { id: session.id, amount: row.amount },
+			sandbox: sandboxProvider.sandbox,
+		});
+	}
+
+	if (req.method === "POST" && url.pathname === "/api/fiat/settle") {
+		const body = await readJson(req);
+		const sessionId = typeof body.sessionId === "string" ? body.sessionId : "";
+		const session = fiatSession(sessionId);
+		if (!session) return reply(res, 404, { error: "no session" });
+		if (session.status === "paid")
+			return reply(res, 409, { error: "already paid" });
+		if (!(await sandboxProvider.confirm(session)))
+			return reply(res, 402, { error: "not paid" });
+		const row = await getRequest(session.requestId);
+		if (!row) return reply(res, 404, { error: "not found" });
+		if (row.paid) return reply(res, 409, { error: "already paid" });
+		try {
+			const hash = await payout(row.recipient as Address, BigInt(row.amount));
+			markSessionPaid(sessionId);
+			await markRequestPaid(row.id, hash);
+			return reply(res, 200, { hash });
+		} catch (err) {
+			const message = err instanceof Error ? err.message : String(err);
+			if (/insufficient|balance|gas required|exceeds/i.test(message))
+				return reply(res, 503, { error: "out of stock" });
+			console.error("fiat settle failed:", message);
+			return reply(res, 502, { error: "payout failed" });
+		}
 	}
 
 	return reply(res, 404, { error: "not found" });
