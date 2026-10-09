@@ -1,3 +1,4 @@
+import { Copy } from "@phosphor-icons/react";
 import { useEffect, useState } from "react";
 import {
 	type ActivityEntry,
@@ -25,7 +26,8 @@ function initialsOf(name: string): string {
 
 // One request row, matching the reference: avatar chip with initials, title
 // plus date on the left, mono amount plus dot status on the right. Chain
-// receipts link out to the explorer; filed requests are history, not links.
+// receipts link out to the explorer; filed requests carry a copy affordance
+// while still pending, so a requester can resend the link without reminting.
 function RequestRow({
 	initials,
 	title,
@@ -33,6 +35,7 @@ function RequestRow({
 	amount,
 	paid,
 	href,
+	requestId,
 }: {
 	initials: string;
 	title: string;
@@ -40,7 +43,23 @@ function RequestRow({
 	amount: string;
 	paid: boolean;
 	href?: string;
+	requestId?: string;
 }) {
+	const [copied, setCopied] = useState(false);
+
+	async function copyLink() {
+		if (!requestId) return;
+		try {
+			await navigator.clipboard.writeText(
+				`${window.location.origin}/pay/${requestId}`,
+			);
+			setCopied(true);
+			setTimeout(() => setCopied(false), 1600);
+		} catch {
+			// Clipboard unavailable (permissions, insecure context): the row
+			// stays a plain row rather than showing a dead control.
+		}
+	}
 	const body = (
 		<>
 			<span
@@ -61,7 +80,7 @@ function RequestRow({
 					})}
 				</span>
 			</span>
-			<span className="shrink-0 text-right">
+			<span className="flex shrink-0 flex-col items-end">
 				<span className="block font-mono text-[15px] font-semibold text-[var(--ink)] tabular-nums">
 					{amount}
 				</span>
@@ -76,6 +95,17 @@ function RequestRow({
 					/>
 					{paid ? "Paid" : "Pending"}
 				</span>
+				{!paid && requestId && (
+					<button
+						type="button"
+						onClick={copyLink}
+						aria-label={`Copy payment link for ${title}`}
+						className="mt-1.5 flex items-center gap-1 rounded-full bg-[var(--teal-wash)] px-2.5 py-1 text-[11px] font-semibold text-[var(--teal-deep)] transition-transform duration-150 ease-out active:scale-95"
+					>
+						<Copy weight="bold" aria-hidden="true" className="size-3" />
+						{copied ? "Copied" : "Copy link"}
+					</button>
+				)}
 			</span>
 		</>
 	);
@@ -164,6 +194,7 @@ export function ActivityList({ address }: { address: `0x${string}` }) {
 							date={new Date(r.created_at)}
 							amount={usdFromBaseUnits(r.amount)}
 							paid={r.paid}
+							requestId={r.paid ? undefined : r.id}
 						/>
 					))}
 					{entries.map((entry) => (
